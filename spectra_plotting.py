@@ -48,11 +48,21 @@ def single_plotting(n_single):
     plt.xlabel("\(\lambda (\mathring{A})\)")
     plt.ylabel("\(f (erg \cdot s^{-1} \cdot \mathring{A}^{-1})\)")
     plt.legend(bbox_to_anchor = [0.55,1.11], ncols = 2)
+
+    #PLOT 2: logf vs lambda
+    plt.figure()
+    plt.plot(wavelength, np.log10(total_flux), label = f'\({n_single}\)')
+    plt.plot(lambda_sun, np.log10(B), label = '\(Sun\)')
+    plt.xlim(0,7500)
+    plt.xlabel('\(\lambda (\mathring{A})\)')
+    plt.ylabel('\(\log_{10}{f}\)')
+    plt.legend(bbox_to_anchor = [0.55,1.11], ncols = 2)
     plt.show()
 
 ### FUNCTION FOR MANY PLOTS ###
 
 def multiple_plotting(n_array):
+    #PLOT 1: f vs lambda
     plt.figure()
     plt.plot(lambda_sun, B, label = '\(Sun\)')
     for i in range(len(n_array)):
@@ -66,6 +76,22 @@ def multiple_plotting(n_array):
     plt.xlim(0,7500)
     plt.xlabel("\(\lambda (\mathring{A})\)")
     plt.ylabel("\(f (erg \cdot s^{-1} \cdot \mathring{A}^{-1})\)")
+    plt.legend(bbox_to_anchor = [0.7,1.11], ncols = 45)
+
+    #PLOT 2: logf vs lambda
+    plt.figure()
+    plt.plot(lambda_sun, np.log10(B), label = '\(Sun\)')
+    for i in range(len(n_array)):
+        #read dara
+        file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_array[i]}"
+        data = ascii.read(file_loc,guess = True, data_start = 2)
+        wavelength = data['col1']
+        total_flux = data['col2']
+        log_flux = np.log10(total_flux)
+        plt.plot(wavelength, np.log10(total_flux), label = f'\({n_array[i]}\)')
+    plt.xlim(0,7500)
+    plt.xlabel('\(\lambda (\mathring{A})\)')
+    plt.ylabel('\(\log_{10}{f}\)')
     plt.legend(bbox_to_anchor = [0.55,1.11], ncols = 2)
     plt.show()
         
