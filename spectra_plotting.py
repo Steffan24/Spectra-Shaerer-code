@@ -67,7 +67,7 @@ def single_plotting(n_single):
 def multiple_plotting(n_array):
     #PLOT 1: f vs lambda
     fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-    ax1.plot(lambda_sun, B, label = '\(Sun\)')
+    ax1.plot(lambda_sun, B, label = '\(Sun\)', linestyle = '--', color='red')
     colour = plt.cm.viridis(np.linspace(0,1,len(n_array)))
     cmap = 'viridis'
     norm = Normalize(0,max(n_array))
@@ -79,15 +79,15 @@ def multiple_plotting(n_array):
         wavelength = data['col1']
         total_flux = data['col2']
         log_flux = np.log10(total_flux)
-        ax1.plot(wavelength, total_flux,c=colour[i], label = f'\({n_array[i]}\)')
+        ax1.plot(wavelength, total_flux,c=colour[i])
     ax1.set_xlim(0,7500)
     ax1.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(f (erg \cdot s^{-1} \cdot \mathring{A}^{-1})\)")
-    #ax1.legend(bbox_to_anchor = [0.7,1.11], ncols = 45)
+    ax1.legend(bbox_to_anchor = [0.7,1.11])
     plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
     labels = [min(n_array), max(n_array)]
     ax2.set_yticks([0,1030], labels=labels)
-    ax2.set_label('n_array values')
+    ax2.set_ylabel('\(Stellar age (Myr \cdot 10^{-1})\)')
     plt.show()
 
     #PLOT 2: logf vs lambda
