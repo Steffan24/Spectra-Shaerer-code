@@ -29,7 +29,7 @@ low = "001"
 sfh = 'is5'
 
 
-n_single = 31 #SED of population (single plotting)
+n_single = 33 #SED of population (single plotting)
 
 n_array = np.linspace(31,1030, 93, dtype='int') # SED (multiple plotting)
 
@@ -91,8 +91,10 @@ def multiple_plotting(n_array):
             all_ages.append(age_data)
             data = ascii.read(file_loc,guess = True, data_start = 2)
             wavelength = data['col1']
-            total_flux = data['col2']
-            log_flux = np.log10(total_flux)
+            total_flux = data['col3']
+            #log_flux = np.log10(total_flux)
+            #log_flux = log_flux
+            log_flux = np.log10(total_flux / (((1.496*10**13)**2)))
             log_flux = log_flux / (1.99*10**30)
             ax1.plot(wavelength, log_flux*(10**30),c=colour[i])
     all_ages_raw = []
@@ -101,7 +103,7 @@ def multiple_plotting(n_array):
     ax1.set_xlim(0,7500)
     ax1.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(logF_{\lambda} 1e+30 (erg \cdot s^{-1} \cdot \mathring{A}^{-1} M_{o}^{-1})\)")
-    ax1.set_ylim(0,35)
+    ax1.set_ylim(0,5)
     ax1.legend(bbox_to_anchor = [0.7,1.11])
     plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
     labels = [min(all_ages_raw), max(all_ages_raw)]
