@@ -21,7 +21,7 @@ T_sun = 5772 #k
 kb = 1.38*10**(-23)
 c = 3*10**8
 h = 6.63*10**(-34)
-T_100M = (10**4.9)
+T_100M = 10**(4.7)
 
 ### VARIABLES (unchanged as of 07/10/25)  ###
 ttt = 'ge0' #Options - ge0: no mass loss, mdt: with mass loss
@@ -110,7 +110,7 @@ def multiple_plotting(n_array):
     ax1.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
     ax1.set_ylim(0,5)
-    ax1.legend(bbox_to_anchor = [1.12,1.11])
+    ax1.legend(bbox_to_anchor = [1.15,1.11])
     plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
     labels = [f'\({min(all_ages_raw)}\)', f'\({max(all_ages_raw)}\)']
     ax2.set_yticks([0,1030], labels=labels)
@@ -148,7 +148,7 @@ def multiple_plotting(n_array):
     ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
     ax1.set_ylim(0,5)
     ax1.set_xlim(2,5.5)
-    ax1.legend(bbox_to_anchor = [1.12,1.11])
+    ax1.legend(bbox_to_anchor = [1.15,1.15])
     plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
     labels = [f'\({min(all_ages_raw)}\)', f'\({max(all_ages_raw)}\)']
     ax2.set_yticks([0,1030], labels=labels)
