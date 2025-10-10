@@ -21,6 +21,7 @@ T_sun = 5772 #k
 kb = 1.38*10**(-23)
 c = 3*10**8
 h = 6.63*10**(-34)
+T_100M = (10**4.9)
 
 ### VARIABLES (unchanged as of 07/10/25)  ###
 ttt = 'ge0' #Options - ge0: no mass loss, mdt: with mass loss
@@ -71,6 +72,7 @@ def single_plotting(n_single):
         plt.plot(np.log10(wavelength), log_flux*(10**30),c='darkblue',label = f'\({age_data} Myr\ since\ ZAMS\)', zorder = 1)
         #plt.xlim(0,7500)
         plt.ylim(0,6)
+        plt.xlim(2,5)
         plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
         plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
@@ -118,6 +120,7 @@ def multiple_plotting(n_array):
     #PLOT 2: f vs lambda
     fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
     ax1.plot(np.log10(lambda_sun), log_B*(10**30), label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 2)
+    ax1.plot(np.log10(lambda_blackbody), log_blackbody*(10**30), label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
     colour = plt.cm.viridis(np.linspace(0,1,len(n_array)))
     cmap = 'viridis'
     norm = Normalize(0,max(n_array))
@@ -144,6 +147,7 @@ def multiple_plotting(n_array):
     ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
     ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
     ax1.set_ylim(0,5)
+    ax1.set_xlim(2,5.5)
     ax1.legend(bbox_to_anchor = [1.12,1.11])
     plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
     labels = [f'\({min(all_ages_raw)}\)', f'\({max(all_ages_raw)}\)']
@@ -161,10 +165,22 @@ def sun_type_star():
     log_B = np.log10(B)# (((1.496*10**13)**2)))
     log_B = log_B / (1.99*10**30)
     return lambda_sun, B, log_B
+
+### FUNCTION FOR A MODEL BLACKBODY ###
+def blackbody(T):
+    lambda_blackbody = np.linspace(0, 300000 , 1*10**5) #angstrom
+    lambda_blackbody_m = lambda_blackbody * 1*10**(-10)
+    B = ((2*h*c**2)/(lambda_blackbody_m**5))*(1/(np.exp(h*c/(lambda_blackbody_m*kb*T)) - 1))
+    blackbody = B*(10**(-8)) / (4 * (np.pi**2))
+    log_B = np.log10(blackbody)# (((1.496*10**13)**2)))
+    log_blackbody = log_B / (1.99*10**30)
+    return lambda_blackbody, blackbody, log_blackbody
     
    
 
 lambda_sun, B, log_B = sun_type_star()
+lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
+
 single_plotting(n_single)
 multiple_plotting(n_array)
 
