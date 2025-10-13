@@ -220,32 +220,33 @@ def recombination():
 def gaussian_profile(M, R, age_1):
     sigma_gal =np.sqrt(M*G/R)
     print(sigma_gal)
-    for i in range(len(all_ages)):
-        if all_ages[i] == age_1:
-            file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_array[i]}"
-            data = ascii.read(file_loc,guess = True, data_start = 2)
-            wavelength = data['col1']
-            total_flux = data['col3']
-            total_flux = total_flux / (4*np.pi*(d**2)*M_sun)
-            log_flux = np.log10(total_flux)     
-            sigma_line = sigma_gal * wavelength / c_m
-            print(sigma_line)
+    #Hbeta
+    lambda_data = np.linspace(0, 6000 , 1*10**6)
+    lambda_peak_H_beta = 4861 #angstrom
+    sigma_line = (sigma_gal/c_m) * lambda_peak_H_beta
+    print(sigma_line)
+    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
+    print(H_beta_peak_Intensity)
+    flux_H_beta = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line)*np.exp((-0.5)*((np.subtract(lambda_data, lambda_peak_H_beta))**2)/(sigma_line**2)))
+    print(flux_H_beta)
+    plt.figure()
+    plt.plot(lambda_data, flux_H_beta)
+    plt.show()
+            
     
-    
-    #f = ((I_0/(np.sqrt(2*np.pi)*sigma_line))*np.exp(-(0.5/sigma_line**2)*(lambda - lambda_0)**2)
     
 
 def single_plot_with_recomb():
     log_wavelength, log_flux = single_plotting(n_single)
     
 
-lambda_sun, B, log_B = sun_type_star()
-lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
+#lambda_sun, B, log_B = sun_type_star()
+#lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
         
-all_ages = multiple_plotting(n_array)        
+#all_ages = multiple_plotting(n_array)        
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-gaussian_profile(M_sun_kg*10**6 , 100*pc/100, age_1)
+gaussian_profile(M_sun_kg*(10**6) , 100*pc/100, age_1)
 
 #single_plotting(n_single)
 
