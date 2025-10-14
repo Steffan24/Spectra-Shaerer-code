@@ -229,6 +229,7 @@ def gaussian_profile(M, R, age_1):
     #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
     lambda_peak_array = [4861, 1215, 6563,4471, 1640, 4686, 3203, 4541]
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
+    plt.figure()
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
     H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
     H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
@@ -236,12 +237,13 @@ def gaussian_profile(M, R, age_1):
     HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
     HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
     HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
-    print(H_beta_peak_Intensity)
+    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2)*M_sun)
     flux_H_beta = []
     flux_H_lya = []
     flux_H_alpha = []
     flux_H_4471 = []
     flux_HII_1640 = []
+    flux_HII_4686 = []
     flux_HII_3203 = []
     flux_HII_4541 = []
     for i in range(len(lambda_data)):
@@ -251,23 +253,24 @@ def gaussian_profile(M, R, age_1):
         flux_H_lya.append(flux_H_lya_1)
         flux_H_alpha_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[2])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[2]))**2)/(sigma_line[2]**2)))
         flux_H_alpha.append(flux_H_alpha_1)
-        flux_H_4471_1 = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line[3])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[3]))**2)/(sigma_line[3]**2)))
+        flux_H_4471_1 = (HeI_4471_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[3])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[3]))**2)/(sigma_line[3]**2)))
         flux_H_4471.append(flux_H_4471_1)
-        flux_H_1640_1 = (H_lya_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[4]))**2)/(sigma_line[4]**2)))
+        flux_H_1640_1 = (HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[4]))**2)/(sigma_line[4]**2)))
         flux_HII_1640.append(flux_H_1640_1)
-        flux_H_3203_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[5]))**2)/(sigma_line[5]**2)))
+        flux_H_4686_1 = (HeII_4686_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[5]))**2)/(sigma_line[4]**2)))
+        flux_HII_4686.append(flux_H_4686_1)
+        flux_H_3203_1 = (HeII_3203_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[6]))**2)/(sigma_line[5]**2)))
         flux_HII_3203.append(flux_H_3203_1)
-        flux_H_4541_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[6])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[6]))**2)/(sigma_line[6]**2)))
+        flux_H_4541_1 = (HeII_4541_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[6])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[7]))**2)/(sigma_line[6]**2)))
         flux_HII_4541.append(flux_H_4541_1)
     flux_H_beta = np.array(flux_H_beta)
     flux_H_lya = np.array(flux_H_lya)
     flux_H_alpha = np.array(flux_H_alpha)
     flux_H_4471 = np.array(flux_H_4471)
     flux_HII_1640 = np.array(flux_HII_1640)
+    flux_HII_4686 = np.array(flux_HII_4686)
     flux_HII_3203 = np.array(flux_HII_3203)
     flux_HII_4541 = np.array(flux_HII_4541)
-    print(f"flux_H_beta:{flux_H_beta}")
-    plt.figure()
     plt.plot(lambda_data, flux_H_beta, color = 'blue')
     plt.plot(lambda_data, flux_H_lya, color='green')
     plt.plot(lambda_data, flux_H_alpha, color = 'yellow')
@@ -278,25 +281,30 @@ def gaussian_profile(M, R, age_1):
     plt.xlim(0,6000)
     #plt.ylim(0, 2*10**(-26))
     plt.show()
-    return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541
+    return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686
 
 def merged_plot_single(n_single):
     total_flux_lines = []
     for i in range(len(wavelength)):
-        flux = total_flux[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i]
+        flux = total_flux[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
         print(f"flux_H_beta: {flux_H_beta[i]}")
         print(flux)
         total_flux_lines.append(flux)
     total_flux_lines = np.array(total_flux_lines)
     print(f"total flux lines: {total_flux_lines}")
     plt.figure()
-    plt.plot(wavelength, total_flux_lines)
-    plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
-    plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
-    plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
-    plt.plot(wavelength, flux_H_alpha, linestyle = '--', color='cyan')
-    plt.xlim(0,6000)
+    plt.plot(wavelength, np.log10(total_flux_lines) + 30)
+    #plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
+    #plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
+    #plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
+    #plt.plot(wavelength, flux_H_alpha, linestyle = '--', color='cyan')
+    plt.xlim(0,7000)
+    plt.ylim(0,6)
+    plt.xlabel("\(\lambda (\mathring{A})\)")
+    plt.ylabel("\(\log{f_{\lambda}}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1}) \)")
     plt.show()
+
+    
     plt.figure()
     plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 30)
     #plt.plot(np.log10(wavelength), np.log10(total_flux)+30, linestyle='--', color = 'red')
@@ -306,9 +314,15 @@ def merged_plot_single(n_single):
     plt.ylim(0,6)
     plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
     plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-    plt.text(3.654,2.84, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.696,0.542, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
+    plt.annotate("",xy=(3.689,1.337), xycoords='data', xytext=(3.729,0.852), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.text(3.05,5.03,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-    plt.text(3.78,3.16,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.76,3.16,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.4,1,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.annotate("",xy=(3.645,1.395), xycoords='data', xytext=(3.575,1.014), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+    plt.text(3.136,4.35,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.38,3.4,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.58,3.38,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
     plt.show()
 
     
@@ -320,7 +334,7 @@ lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
 wavelength, total_flux = single_plotting(n_single)
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, age_1)
+flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, age_1)
 merged_plot_single(n_single)
 
 
