@@ -18,19 +18,22 @@ plt.rcParams["legend.frameon"] = False
 plt.rcParams["axes.linewidth"] = 1.75
 
 ### CONSTANTS USED ###
-T_sun = 5772 #k
+#SI UNITS
+T_sun = 5772 #k'
+c_m = 3*10**8 #m
+T_100M = 10**(4.7) #k
+M_sun_kg = 1.989*10**30
+G = 6.67*10**(-11)
+
+#non SI
 kb = 1.38*10**(-16)
 c = 3*10**10
-c_m = 3*10**8
 h = 6.63*10**(-27)
-T_100M = 10**(4.7)
 pc = 3.08*10**18
 AU = 1.496*10**13
 d = 1 * AU
 R_sun = 6.957*10**10
 M_sun = 1.989*10**33
-M_sun_kg = 1.989*10**30
-G = 6.67*10**(-11)
 
 
 ### VARIABLES (unchanged as of 07/10/25)  ###
@@ -50,7 +53,6 @@ n_array = np.linspace(31,1030, 999, dtype='int') # SED (multiple plotting)
 
 def single_plotting(n_single):
     #read data
-    
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_single}"
     if os.path.exists(file_loc):
         age = ascii.read(file_loc,format = 'csv', comment = '$',delimiter = '\s',data_start = 12, data_end = 13, names = ['preamble1', 'preamble2','3','4','5','6',' data'])
@@ -58,8 +60,9 @@ def single_plotting(n_single):
         age_data = age['6'][0]
         print(f"AGE: {age_data}")
         age_data = (10**(age_data))*10**(-6)
-        data = ascii.read(file_loc,guess = True, data_start = 2)
+        data = ascii.read(file_loc,guess = True, data_start = 0)
         wavelength = data['col1']
+        print(f"WAVELENGTH: {wavelength}")
         total_flux = data['col3']
         total_flux = total_flux / (4*np.pi*(d**2)*M_sun)
         log_flux = np.log10(total_flux)
@@ -88,6 +91,7 @@ def single_plotting(n_single):
         plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
         plt.show()
+        return wavelength, total_flux
 
 ### FUNCTION FOR MANY PLOTS ###
 
@@ -203,7 +207,7 @@ def blackbody(T):
 def recombination():
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.22"
     if os.path.exists(file_loc):
-        data = ascii.read(file_loc,guess = True, data_start = 2)
+        data = ascii.read(file_loc,guess = True, data_start = 0)
         print(data)
         age_log = data['col1']
         H_beta = data['col5']
@@ -218,37 +222,106 @@ def recombination():
     return age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541
 
 def gaussian_profile(M, R, age_1):
-    sigma_gal =np.sqrt(M*G/R)
+    sigma_gal =np.sqrt(M*G/R) # m/s
     print(sigma_gal)
     #Hbeta
-    lambda_data = np.linspace(0, 6000 , 1*10**6)
-    lambda_peak_H_beta = 4861 #angstrom
-    sigma_line = (sigma_gal/c_m) * lambda_peak_H_beta
-    print(sigma_line)
+    lambda_data = wavelength
+    #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
+    lambda_peak_array = [4861, 1215, 6563,4471, 1640, 4686, 3203, 4541]
+    sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
+    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
+    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
+    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
     print(H_beta_peak_Intensity)
-    flux_H_beta = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line)*np.exp((-0.5)*((np.subtract(lambda_data, lambda_peak_H_beta))**2)/(sigma_line**2)))
-    print(flux_H_beta)
+    flux_H_beta = []
+    flux_H_lya = []
+    flux_H_alpha = []
+    flux_H_4471 = []
+    flux_HII_1640 = []
+    flux_HII_3203 = []
+    flux_HII_4541 = []
+    for i in range(len(lambda_data)):
+        flux_H_beta_1 = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line[0])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[0]))**2)/(sigma_line[0]**2)))
+        flux_H_beta.append(flux_H_beta_1)
+        flux_H_lya_1 = (H_lya_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[1])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[1]))**2)/(sigma_line[1]**2)))
+        flux_H_lya.append(flux_H_lya_1)
+        flux_H_alpha_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[2])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[2]))**2)/(sigma_line[2]**2)))
+        flux_H_alpha.append(flux_H_alpha_1)
+        flux_H_4471_1 = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line[3])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[3]))**2)/(sigma_line[3]**2)))
+        flux_H_4471.append(flux_H_4471_1)
+        flux_H_1640_1 = (H_lya_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[4]))**2)/(sigma_line[4]**2)))
+        flux_HII_1640.append(flux_H_1640_1)
+        flux_H_3203_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[5]))**2)/(sigma_line[5]**2)))
+        flux_HII_3203.append(flux_H_3203_1)
+        flux_H_4541_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[6])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[6]))**2)/(sigma_line[6]**2)))
+        flux_HII_4541.append(flux_H_4541_1)
+    flux_H_beta = np.array(flux_H_beta)
+    flux_H_lya = np.array(flux_H_lya)
+    flux_H_alpha = np.array(flux_H_alpha)
+    flux_H_4471 = np.array(flux_H_4471)
+    flux_HII_1640 = np.array(flux_HII_1640)
+    flux_HII_3203 = np.array(flux_HII_3203)
+    flux_HII_4541 = np.array(flux_HII_4541)
+    print(f"flux_H_beta:{flux_H_beta}")
     plt.figure()
-    plt.plot(lambda_data, flux_H_beta)
+    plt.plot(lambda_data, flux_H_beta, color = 'blue')
+    plt.plot(lambda_data, flux_H_lya, color='green')
+    plt.plot(lambda_data, flux_H_alpha, color = 'yellow')
+    plt.plot(lambda_data, flux_H_4471, color='cyan')
+    plt.plot(lambda_data, flux_HII_1640, color = 'orange')
+    plt.plot(lambda_data, flux_HII_3203, color='purple')
+    plt.plot(lambda_data, flux_HII_4541, color = 'red')
+    plt.xlim(0,6000)
+    #plt.ylim(0, 2*10**(-26))
     plt.show()
-            
-    
+    return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541
+
+def merged_plot_single(n_single):
+    total_flux_lines = []
+    for i in range(len(wavelength)):
+        flux = total_flux[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i]
+        print(f"flux_H_beta: {flux_H_beta[i]}")
+        print(flux)
+        total_flux_lines.append(flux)
+    total_flux_lines = np.array(total_flux_lines)
+    print(f"total flux lines: {total_flux_lines}")
+    plt.figure()
+    plt.plot(wavelength, total_flux_lines)
+    plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
+    plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
+    plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
+    plt.plot(wavelength, flux_H_alpha, linestyle = '--', color='cyan')
+    plt.xlim(0,6000)
+    plt.show()
+    plt.figure()
+    plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 30)
+    #plt.plot(np.log10(wavelength), np.log10(total_flux)+30, linestyle='--', color = 'red')
+    #plt.plot(np.log10(wavelength), np.log10(flux_H_beta)+30, linestyle='--', color='green')
+    plt.ylabel("logs")
+    plt.xlim(2, np.log10(7000))
+    plt.ylim(0,6)
+    plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
+    plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+    plt.text(3.654,2.84, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.05,5.03,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.78,3.16,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.show()
+
     
 
-def single_plot_with_recomb():
-    log_wavelength, log_flux = single_plotting(n_single)
-    
-
-#lambda_sun, B, log_B = sun_type_star()
-#lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
+lambda_sun, B, log_B = sun_type_star()
+lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
         
-#all_ages = multiple_plotting(n_array)        
+#all_ages= multiple_plotting(n_array)
+wavelength, total_flux = single_plotting(n_single)
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-gaussian_profile(M_sun_kg*(10**6) , 100*pc/100, age_1)
-
-#single_plotting(n_single)
+flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, age_1)
+merged_plot_single(n_single)
 
 
 
