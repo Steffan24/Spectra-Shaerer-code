@@ -224,12 +224,13 @@ def recombination():
 
 def gaussian_profile(M, R, age_1):
     sigma_gal =np.sqrt(M*G/R) # m/s
-    print(sigma_gal)
+    print(f"SIGMA GAL: {sigma_gal}")
     #Hbeta
     lambda_data = wavelength
     #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
     lambda_peak_array = [4861, 1215, 6563,4471, 1640, 4686, 3203, 4541]
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
+    print(f"SIGMA LINE: {sigma_line}")
     plt.figure()
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
     H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
@@ -288,11 +289,11 @@ def merged_plot_single(n_single):
     total_flux_lines = []
     for i in range(len(wavelength)):
         flux = total_flux[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
-        print(f"flux_H_beta: {flux_H_beta[i]}")
-        print(flux)
+        #print(f"flux_H_beta: {flux_H_beta[i]}")
+        #print(flux)
         total_flux_lines.append(flux)
     total_flux_lines = np.array(total_flux_lines)
-    print(f"total flux lines: {total_flux_lines}")
+    #print(f"total flux lines: {total_flux_lines}")
     plt.figure()
     plt.plot(wavelength, np.log10(total_flux_lines) + 30)
     #plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
@@ -311,19 +312,21 @@ def merged_plot_single(n_single):
     #plt.plot(np.log10(wavelength), np.log10(total_flux)+30, linestyle='--', color = 'red')
     #plt.plot(np.log10(wavelength), np.log10(flux_H_beta)+30, linestyle='--', color='green')
     plt.ylabel("logs")
-    plt.xlim(2, np.log10(7000))
+    plt.xlim(2, 4.5)
     plt.ylim(0,6)
     plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
     plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
     plt.text(3.696,0.542, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
     plt.annotate("",xy=(3.689,1.337), xycoords='data', xytext=(3.729,0.852), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.text(3.05,5.03,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-    plt.text(3.76,3.16,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.text(3.856,2.795,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
     plt.text(3.4,1,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
     plt.annotate("",xy=(3.645,1.395), xycoords='data', xytext=(3.575,1.014), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.text(3.136,4.35,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
-    plt.text(3.38,3.4,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.annotate("",xy=(3.210, 3.176), xycoords='data', xytext=(3.216,4.227), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+    plt.text(3.38,2.505,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
     plt.text(3.58,3.38,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
+    plt.annotate("",xy=(3.666,1.991), xycoords='data', xytext=(3.659,3.275), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.show()
 
 
@@ -333,7 +336,7 @@ def gaussian_profile_multiple_timescales(M, R):
     lambda_peak_array = [4861, 1215, 6563,4471, 1640, 4686, 3203, 4541]
     #Hbeta
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
-    plt.figure()
+    fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
     colour = plt.cm.viridis(np.linspace(0,1,len(all_ages)))
     cmap = 'viridis'
     norm = Normalize(min(all_ages),max(all_ages))
@@ -394,22 +397,34 @@ def gaussian_profile_multiple_timescales(M, R):
             flux = total_flux[k] + flux_H_beta[k] + flux_H_lya[k] + flux_H_alpha[k] + flux_H_4471[k] + flux_HII_1640[k] + flux_HII_4686[k] + flux_HII_3203[k] + flux_HII_4541[k]
             total_flux_array.append(flux)
         total_flux_array = np.array(total_flux_array)
-        print(f"TOTAL FLUX ARRAY: {total_flux_array}")}
-        plt.plot(np.log10(lambda_data), np.log10(total_flux_array) + 30,c = colour[i])
-    plt.xlim(0,6000)
-        #plt.ylim(0, 2*10**(-26))
+        #print(f"TOTAL FLUX ARRAY: {total_flux_array}")
+        ax1.plot(np.log10(lambda_data), np.log10(total_flux_array) + 30,c = colour[i])
+    ax1.set_xlim(2,5.5)
+    ax1.set_ylim(-2, 7)
+    ax1.set_xlabel("\(\lambda (\mathring{A})\)")
+    ax1.set_ylabel("\(\log{f_{\lambda}}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1}) \)")
+    plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
+    #lifetimes
+    t_100 = np.log10((10**10)*(100)**(-2.5))
+    t_50 = np.log10((10**10)*(50)**(-2.5))
+    t_10 = np.log10((10**10)*(10)**(-2.5))
+    t_5 = np.log10((10**10)*(5)**(-2.5))
+    labels = [f'\({min(all_ages)}\)','\(t_{100M_{\odot}}\)','\(t_{50M_{\odot}}\)','\(t_{10M_{\odot}}\)','\(t_{5M_{\odot}}\)', f'\({max(all_ages)}\)']
+    ax2.set_yticks([min(all_ages),t_100, t_50, t_10, t_5,max(all_ages)], labels=labels)
+    ax2.set_ylabel('\(\log{t}\ since\ ZAMS\ (yr)\)')
     plt.show()
 
 lambda_sun, B, log_B = sun_type_star()
 lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
         
-all_ages= multiple_plotting(n_array)
+#all_ages= multiple_plotting(n_array)
 wavelength, total_flux = single_plotting(n_single)
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, age_1)
-gaussian_profile_multiple_timescales((10**10)*M_sun_kg, 100*pc/100)
+flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**8)*M_sun_kg, 10*pc/100, age_1)
 merged_plot_single(n_single)
+#gaussian_profile_multiple_timescales((10**6)*M_sun, 100*pc)
+#merged_plot_single(n_single)
 
 
 
