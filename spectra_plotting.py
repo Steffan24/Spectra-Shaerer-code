@@ -91,7 +91,7 @@ def single_plotting(n_single):
         plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
         plt.show()
-        return wavelength, total_flux
+        return wavelength, total_flux, age_data
 
 ### FUNCTION FOR MANY PLOTS ###
 
@@ -178,6 +178,10 @@ def multiple_plotting(n_array):
     labels = [f'\({min(all_ages)}\)','\(t_{100M_{\odot}}\)','\(t_{50M_{\odot}}\)','\(t_{10M_{\odot}}\)','\(t_{5M_{\odot}}\)', f'\({max(all_ages)}\)']
     ax2.set_yticks([min(all_ages),t_100, t_50, t_10, t_5,max(all_ages)], labels=labels)
     ax2.set_ylabel('\(\log{t}\ since\ ZAMS\ (yr)\)')
+    wavelength_1, total_flux_1, age_1 = single_plotting(40)
+    age_ = age_1
+    print(f"AGE1: {age}")
+    ax1.plot(np.log10(wavelength_1), np.log10(total_flux_1)+30, linestyle='--', c='green', zorder = 2)
     plt.show()
     return all_ages
         
@@ -510,12 +514,12 @@ def gaussian_profile_multiple_timescales(M, R):
 
 lambda_sun, B, log_B = sun_type_star()
 lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
-        
-#all_ages= multiple_plotting(n_array)
-wavelength, total_flux = single_plotting(n_single)
+
+wavelength, total_flux, age = single_plotting(n_single)
+all_ages= multiple_plotting(n_array)
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, wavelength)
+flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((5*10**9)*M_sun_kg, 100*pc/100, wavelength)
 
 print(f"element x: {wavelength[400]}")
 print(f"wavelength difference: {wavelength[299] - wavelength[300]}")
