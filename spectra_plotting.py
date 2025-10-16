@@ -222,24 +222,36 @@ def recombination():
         HeII_4541 = data['col21'] * H_beta
     return age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541
 
-def gaussian_profile(M, R, age_1):
+def gaussian_profile(M, R, wavelength):
+    print(f"INPUT PARAMS: M = {M} kg, R = {R} m")
     sigma_gal =np.sqrt(M*G/R) # m/s
-    print(f"SIGMA GAL: {sigma_gal}")
+    print(f"SIGMA GAL: {sigma_gal} m/s")
     #Hbeta
     lambda_data = wavelength
+    #lambda_data = np.linspace(1,7500,1*10**5)
+    print(f"wavelength data: {lambda_data}")
     #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
-    lambda_peak_array = [4861, 1215, 6563,4471, 1640, 4686, 3203, 4541]
+    lambda_peak_array = [4861, 1215, 6563, 4471, 1640, 4686, 3203, 4541]
+    lambda_peak_array = np.array(lambda_peak_array)
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
-    print(f"SIGMA LINE: {sigma_line}")
+    print(f"SIGMA LINE: {sigma_line} Angstrom")
     plt.figure()
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
     H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
     H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
     HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
     HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) + 30}")
     HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
     HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
     HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
     flux_H_beta = []
     flux_H_lya = []
     flux_H_alpha = []
@@ -248,22 +260,31 @@ def gaussian_profile(M, R, age_1):
     flux_HII_4686 = []
     flux_HII_3203 = []
     flux_HII_4541 = []
+    print(f"lambda data element 0: {lambda_data[0]}")
     for i in range(len(lambda_data)):
-        flux_H_beta_1 = (H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line[0])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[0]))**2)/(sigma_line[0]**2)))
+        exponential_1 = np.exp(((lambda_data[i] - lambda_peak_array[0])**2)/(-2*(sigma_line[0])**2))
+        flux_H_beta_1 = ((H_beta_peak_Intensity/(np.sqrt(2*np.pi)*sigma_line[0])) * exponential_1)
         flux_H_beta.append(flux_H_beta_1)
-        flux_H_lya_1 = (H_lya_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[1])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[1]))**2)/(sigma_line[1]**2)))
+        exponential_2 = np.exp(((lambda_data[i] - lambda_peak_array[1])**2)/(-2*(sigma_line[1])**2))
+        flux_H_lya_1 = ((H_lya_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[1]))*exponential_2)
         flux_H_lya.append(flux_H_lya_1)
-        flux_H_alpha_1 = (H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[2])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[2]))**2)/(sigma_line[2]**2)))
+        exponential_3 = np.exp(((lambda_data[i] - lambda_peak_array[2])**2)/(-2*(sigma_line[2])**2))
+        flux_H_alpha_1 = ((H_alpha_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[2]))*exponential_3)
         flux_H_alpha.append(flux_H_alpha_1)
-        flux_H_4471_1 = (HeI_4471_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[3])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[3]))**2)/(sigma_line[3]**2)))
+        exponential_4 = np.exp(((lambda_data[i] - lambda_peak_array[3])**2)/(-2*(sigma_line[3])**2))
+        flux_H_4471_1 = ((HeI_4471_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[3]))*exponential_4)
         flux_H_4471.append(flux_H_4471_1)
-        flux_H_1640_1 = (HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[4]))**2)/(sigma_line[4]**2)))
+        exponential_5 = np.exp(((lambda_data[i] - lambda_peak_array[4])**2)/(-2*(sigma_line[4])**2))
+        flux_H_1640_1 = ((HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4]))*exponential_5)
         flux_HII_1640.append(flux_H_1640_1)
-        flux_H_4686_1 = (HeII_4686_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[5]))**2)/(sigma_line[4]**2)))
+        exponential_6 = np.exp(((lambda_data[i] - lambda_peak_array[5])**2)/(-2*(sigma_line[5])**2))
+        flux_H_4686_1 = ((HeII_4686_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5]))*exponential_6)
         flux_HII_4686.append(flux_H_4686_1)
-        flux_H_3203_1 = (HeII_3203_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[6])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[6]))**2)/(sigma_line[5]**2)))
+        exponential_7 = np.exp(((lambda_data[i] - lambda_peak_array[6])**2)/(-2*(sigma_line[6])**2))
+        flux_H_3203_1 = ((HeII_3203_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[6]))*exponential_7)
         flux_HII_3203.append(flux_H_3203_1)
-        flux_H_4541_1 = (HeII_4541_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[7])*np.exp((-0.5)*((np.subtract(lambda_data[i], lambda_peak_array[7]))**2)/(sigma_line[6]**2)))
+        exponential_8 = np.exp(((lambda_data[i] - lambda_peak_array[7])**2)/(-2*(sigma_line[7])**2))
+        flux_H_4541_1 = ((HeII_4541_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[7]))*exponential_8)
         flux_HII_4541.append(flux_H_4541_1)
     flux_H_beta = np.array(flux_H_beta)
     flux_H_lya = np.array(flux_H_lya)
@@ -273,29 +294,42 @@ def gaussian_profile(M, R, age_1):
     flux_HII_4686 = np.array(flux_HII_4686)
     flux_HII_3203 = np.array(flux_HII_3203)
     flux_HII_4541 = np.array(flux_HII_4541)
-    plt.plot(lambda_data, flux_H_beta, color = 'blue')
-    plt.plot(lambda_data, flux_H_lya, color='green')
-    plt.plot(lambda_data, flux_H_alpha, color = 'yellow')
-    plt.plot(lambda_data, flux_H_4471, color='cyan')
-    plt.plot(lambda_data, flux_HII_1640, color = 'orange')
-    plt.plot(lambda_data, flux_HII_3203, color='purple')
-    plt.plot(lambda_data, flux_HII_4541, color = 'red')
-    plt.xlim(0,6000)
-    #plt.ylim(0, 2*10**(-26))
+    plt.plot(lambda_data, np.log10(flux_H_beta) + 30, color = 'blue')
+    plt.plot(lambda_data, np.log10(flux_H_lya) + 30, color='green')
+    plt.plot(lambda_data, np.log10(flux_H_alpha) + 30, color = 'yellow')
+    plt.plot(lambda_data, np.log10(flux_H_4471) + 30, color='cyan')
+    plt.plot(lambda_data, np.log10(flux_HII_1640) + 30, color = 'orange')
+    plt.plot(lambda_data, np.log10(flux_HII_3203) + 30, color='purple')
+    plt.plot(lambda_data, np.log10(flux_HII_4541) + 30, color = 'red')
+    #plt.xlim(0,7000)
+    #plt.ylim(0, 7)
     plt.show()
+    print(f"FLUX LYMAN: {flux_H_lya}")
     return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686
 
-def merged_plot_single(n_single):
+def merged_plot_single(n_single, wavelength):
     total_flux_lines = []
+    file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_single}"
+    if os.path.exists(file_loc):
+        data = ascii.read(file_loc,guess = True, data_start = 0)
+        wavelength = data['col1']
+        print(f"WAVELENGTH: {wavelength}")
+        total_flux = data['col3']
+        total_flux = total_flux / (4*np.pi*(d**2)*M_sun)
+    #lambda_data = np.linspace(0,7500,1*10**5)
+    #print(f"total flux: {total_flux}")
+    print(f"beta:{flux_H_beta}, lya:{flux_H_lya}, alpha:{flux_H_alpha}, 4471:{flux_H_4471}, 1640:{flux_HII_1640}, 3203:{flux_HII_3203}, 4541:{flux_HII_4541}, 4686:{flux_HII_4686}")
     for i in range(len(wavelength)):
+        #flux =flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
         flux = total_flux[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
         #print(f"flux_H_beta: {flux_H_beta[i]}")
         #print(flux)
         total_flux_lines.append(flux)
     total_flux_lines = np.array(total_flux_lines)
-    #print(f"total flux lines: {total_flux_lines}")
+    
     plt.figure()
     plt.plot(wavelength, np.log10(total_flux_lines) + 30)
+    plt.plot(wavelength, np.log10(total_flux) + 30, c='red')
     #plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
     #plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
     #plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
@@ -328,6 +362,66 @@ def merged_plot_single(n_single):
     plt.text(3.58,3.38,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
     plt.annotate("",xy=(3.666,1.991), xycoords='data', xytext=(3.659,3.275), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.show()
+
+def delta_plot(M,R):
+    print(f"INPUT PARAMS: M = {M} kg, R = {R} m")
+    sigma_gal =np.sqrt(M*G/R) # m/s
+    print(f"SIGMA GAL: {sigma_gal} m/s")
+    #Hbeta
+    lambda_data = wavelength
+    #lambda_data = np.linspace(1,7500,1*10**5)
+    print(f"wavelength data: {lambda_data}")
+    #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
+    lambda_peak_array = [4861, 1215, 6563, 4471, 1640, 4686, 3203, 4541]
+    lambda_peak_array = np.array(lambda_peak_array)
+    sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
+    print(f"SIGMA LINE: {sigma_line} Angstrom")
+    #plt.figure()
+    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
+    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
+    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
+    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
+    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) + 30}")
+    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
+    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
+    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2)*M_sun)
+    print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
+    total_flux_delta = []
+    for i in range(len(wavelength)):
+        if abs(wavelength[i] - lambda_peak_array[0]) < 10:
+            total_flux_delta.append(H_beta_peak_Intensity)
+        elif abs(wavelength[i] - lambda_peak_array[1]) < 10:
+            total_flux_delta.append(H_lya_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[2]) < 10:
+            total_flux_delta.append(H_alpha_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[3]) < 10:
+            total_flux_delta.append(HeI_4471_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[4]) < 10:
+            total_flux_delta.append(HeII_1640_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[5]) < 10:
+            total_flux_delta.append(HeII_3203_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[6]) < 10:
+            total_flux_delta.append(HeII_4541_peak_intensity)
+        elif abs(wavelength[i] - lambda_peak_array[7]) < 10:
+            total_flux_delta.append(HeII_4686_peak_intensity)
+        else:
+            total_flux_delta.append(total_flux[i])
+    plt.figure()
+    plt.plot(wavelength, np.log10(total_flux_delta)+30)
+    plt.ylim(0,7)
+    plt.xlim(0,7000)
+    plt.show()
+        
+                            
+            
+    
 
 
 def gaussian_profile_multiple_timescales(M, R):
@@ -421,8 +515,17 @@ lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
 wavelength, total_flux = single_plotting(n_single)
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = recombination()        
 age_1 = age_log[0]
-flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**8)*M_sun_kg, 10*pc/100, age_1)
-merged_plot_single(n_single)
+flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**10)*M_sun_kg, 100*pc/100, wavelength)
+
+print(f"element x: {wavelength[400]}")
+print(f"wavelength difference: {wavelength[299] - wavelength[300]}")
+    
+
+merged_plot_single(n_single, wavelength)
+#wavelength = np.linspace(1,9000, 1*10**6)
+#flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686 = gaussian_profile((10**6)*M_sun_kg, 100*pc/100, wavelength)
+#merged_plot_single(n_single, wavelength)
+delta_plot((10**6)*M_sun_kg, 100*pc/100)
 #gaussian_profile_multiple_timescales((10**6)*M_sun, 100*pc)
 #merged_plot_single(n_single)
 
