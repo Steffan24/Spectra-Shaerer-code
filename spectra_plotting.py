@@ -51,7 +51,7 @@ n_array = np.linspace(31,1030, 999, dtype='int') # SED (multiple plotting)
 
 ### FUNCTION FOR SINGLE LINE PLOT ####
 
-def single_plotting(n_single):
+def single_plotting(n_single, plot):
     #read data
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_single}"
     if os.path.exists(file_loc):
@@ -67,43 +67,44 @@ def single_plotting(n_single):
         total_flux = total_flux / (4*np.pi*(d**2)*M_sun)
         log_flux = np.log10(total_flux)
         log_flux = log_flux
+        if plot = True:
+            #PLOT 1: logf vs lambda
+            plt.figure()
+            plt.plot(lambda_sun, log_B+30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 2)
+            plt.plot(wavelength, log_flux+30,c='darkblue',label = f'\({age_data} Myr\ since\ ZAMS\)', zorder = 1)
+            #plt.xlim(0,7500)
+            #plt.ylim(0,8)
+            plt.xlim(0,6500)
+            plt.xlabel("\(\lambda (\mathring{A})\)")
+            plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+            plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
+            plt.show()
 
-        #PLOT 1: logf vs lambda
-        plt.figure()
-        plt.plot(lambda_sun, log_B+30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 2)
-        plt.plot(wavelength, log_flux+30,c='darkblue',label = f'\({age_data} Myr\ since\ ZAMS\)', zorder = 1)
-        #plt.xlim(0,7500)
-        #plt.ylim(0,8)
-        plt.xlim(0,6500)
-        plt.xlabel("\(\lambda (\mathring{A})\)")
-        plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
-        plt.show()
-
-        #PLOT 2: logf vs loglambda
-        plt.figure()
-        plt.plot(np.log10(lambda_sun), log_B+ 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 2)
-        plt.plot(np.log10(wavelength), log_flux + 30,c='darkblue',label = f'\({age_data} Myr\ since\ ZAMS\)', zorder = 1)
-        #plt.xlim(0,7500)
-        plt.ylim(0,8)
-        plt.xlim(2,5.3)
-        plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
-        plt.show()
+            #PLOT 2: logf vs loglambda
+            plt.figure()
+            plt.plot(np.log10(lambda_sun), log_B+ 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 2)
+            plt.plot(np.log10(wavelength), log_flux + 30,c='darkblue',label = f'\({age_data} Myr\ since\ ZAMS\)', zorder = 1)
+            #plt.xlim(0,7500)
+            plt.ylim(0,8)
+            plt.xlim(2,5.3)
+            plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
+            plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+            plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
+            plt.show()
         return wavelength, total_flux, age_data
 
 ### FUNCTION FOR MANY PLOTS ###
 
-def multiple_plotting(n_array):
+def multiple_plotting(n_array, plot):
     #PLOT 1: logf vs lambda
-    fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-    ax1.plot(lambda_sun, log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 2)
-    colour = plt.cm.viridis(np.linspace(0,1,len(n_array)))
-    cmap = 'viridis'
-    norm = Normalize(0,max(n_array))
-    bar = ScalarMappable(cmap=cmap, norm=norm)
-    all_ages = []
+    if plot = True:
+        fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
+        ax1.plot(lambda_sun, log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 2)
+        colour = plt.cm.viridis(np.linspace(0,1,len(n_array)))
+        cmap = 'viridis'
+        norm = Normalize(0,max(n_array))
+        bar = ScalarMappable(cmap=cmap, norm=norm)
+        all_ages = []
     for i in range(len(n_array)):
         #read dara
         file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_array[i]}"
@@ -116,20 +117,22 @@ def multiple_plotting(n_array):
             total_flux = data['col3']
             total_flux = total_flux / (4*np.pi*(d**2)*M_sun)
             log_flux = np.log10(total_flux)
-            ax1.plot(wavelength, log_flux + 30,c=colour[i], zorder = 1)
+            if plot = True:
+                ax1.plot(wavelength, log_flux + 30,c=colour[i], zorder = 1)
     all_ages_raw = []
     for i in range(len(all_ages)):
         all_ages_raw.append((10**(-6))*10**(all_ages[i]))
-    ax1.set_xlim(0,7500)
-    ax1.set_xlabel("\(\lambda (\mathring{A})\)")
-    ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-    ax1.set_ylim(0,8)
-    ax1.legend(bbox_to_anchor = [1.15,1.11])
-    plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
-    labels = [f'\({min(all_ages_raw)}\)', f'\({max(all_ages_raw)}\)']
-    ax2.set_yticks([0,1030], labels=labels)
-    ax2.set_ylabel('\(Time\ since\ ZAMS\ (Myr)\)')
-    plt.show()
+    if plot = True:
+        ax1.set_xlim(0,7500)
+        ax1.set_xlabel("\(\lambda (\mathring{A})\)")
+        ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        ax1.set_ylim(0,8)
+        ax1.legend(bbox_to_anchor = [1.15,1.11])
+        plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
+        labels = [f'\({min(all_ages_raw)}\)', f'\({max(all_ages_raw)}\)']
+        ax2.set_yticks([0,1030], labels=labels)
+        ax2.set_ylabel('\(Time\ since\ ZAMS\ (Myr)\)')
+        plt.show()
 
     #PLOT 2: f vs lambda
     fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
@@ -232,7 +235,7 @@ def recombination():
         HeII_4541 = data['col21'] * H_beta
     return age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541
 
-def gaussian_profile(M, R, wavelength):
+def gaussian_profile(M, R, wavelength, plot):
     print(f"INPUT PARAMS: M = {M} kg, R = {R} m")
     sigma_gal =np.sqrt(M*G/R) # m/s
     print(f"SIGMA GAL: {sigma_gal} m/s")
@@ -245,7 +248,6 @@ def gaussian_profile(M, R, wavelength):
     lambda_peak_array = np.array(lambda_peak_array)
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
     print(f"SIGMA LINE: {sigma_line} Angstrom")
-    plt.figure()
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
     print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
     H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
@@ -304,20 +306,22 @@ def gaussian_profile(M, R, wavelength):
     flux_HII_4686 = np.array(flux_HII_4686)
     flux_HII_3203 = np.array(flux_HII_3203)
     flux_HII_4541 = np.array(flux_HII_4541)
-    plt.plot(lambda_data, np.log10(flux_H_beta) + 30, color = 'blue')
-    plt.plot(lambda_data, np.log10(flux_H_lya) + 30, color='green')
-    plt.plot(lambda_data, np.log10(flux_H_alpha) + 30, color = 'yellow')
-    plt.plot(lambda_data, np.log10(flux_H_4471) + 30, color='cyan')
-    plt.plot(lambda_data, np.log10(flux_HII_1640) + 30, color = 'orange')
-    plt.plot(lambda_data, np.log10(flux_HII_3203) + 30, color='purple')
-    plt.plot(lambda_data, np.log10(flux_HII_4541) + 30, color = 'red')
-    #plt.xlim(0,7000)
-    #plt.ylim(0, 7)
-    plt.show()
+    if plot = True:
+        plt.figure()
+        plt.plot(lambda_data, np.log10(flux_H_beta) + 30, color = 'blue')
+        plt.plot(lambda_data, np.log10(flux_H_lya) + 30, color='green')
+        plt.plot(lambda_data, np.log10(flux_H_alpha) + 30, color = 'yellow')
+        plt.plot(lambda_data, np.log10(flux_H_4471) + 30, color='cyan')
+        plt.plot(lambda_data, np.log10(flux_HII_1640) + 30, color = 'orange')
+        plt.plot(lambda_data, np.log10(flux_HII_3203) + 30, color='purple')
+        plt.plot(lambda_data, np.log10(flux_HII_4541) + 30, color = 'red')
+        #plt.xlim(0,7000)
+        #plt.ylim(0, 7)
+        plt.show()
     print(f"FLUX LYMAN: {flux_H_lya}")
     return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686
 
-def gaussian_profile_inter(M, R, wavelength):
+def gaussian_profile_inter(M, R, wavelength, plot):
     print(f"INPUT PARAMS: M = {M} kg, R = {R} m")
     sigma_gal =np.sqrt(M*G/R) # m/s
     print(f"SIGMA GAL: {sigma_gal} m/s")
@@ -330,7 +334,6 @@ def gaussian_profile_inter(M, R, wavelength):
     lambda_peak_array = np.array(lambda_peak_array)
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
     print(f"SIGMA LINE: {sigma_line} Angstrom")
-    #plt.figure()
     H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
     print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
     H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
@@ -389,16 +392,18 @@ def gaussian_profile_inter(M, R, wavelength):
     flux_HII_4686 = np.array(flux_HII_4686)
     flux_HII_3203 = np.array(flux_HII_3203)
     flux_HII_4541 = np.array(flux_HII_4541)
-    #plt.plot(lambda_data, np.log10(flux_H_beta) + 30, color = 'blue')
-    #plt.plot(lambda_data, np.log10(flux_H_lya) + 30, color='green')
-    #plt.plot(lambda_data, np.log10(flux_H_alpha) + 30, color = 'yellow')
-    #plt.plot(lambda_data, np.log10(flux_H_4471) + 30, color='cyan')
-    #plt.plot(lambda_data, np.log10(flux_HII_1640) + 30, color = 'orange')
-    #plt.plot(lambda_data, np.log10(flux_HII_3203) + 30, color='purple')
-    #plt.plot(lambda_data, np.log10(flux_HII_4541) + 30, color = 'red')
-    #plt.xlim(0,7000)
-    #plt.ylim(0, 7)
-    #plt.show()
+    if plot = True:
+        #plt.figure()
+        #plt.plot(lambda_data, np.log10(flux_H_beta) + 30, color = 'blue')
+        #plt.plot(lambda_data, np.log10(flux_H_lya) + 30, color='green')
+        #plt.plot(lambda_data, np.log10(flux_H_alpha) + 30, color = 'yellow')
+        #plt.plot(lambda_data, np.log10(flux_H_4471) + 30, color='cyan')
+        #plt.plot(lambda_data, np.log10(flux_HII_1640) + 30, color = 'orange')
+        #plt.plot(lambda_data, np.log10(flux_HII_3203) + 30, color='purple')
+        #plt.plot(lambda_data, np.log10(flux_HII_4541) + 30, color = 'red')
+        #plt.xlim(0,7000)
+        #plt.ylim(0, 7)
+        #plt.show()
     print(f"FLUX LYMAN: {flux_H_lya}")
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.{n_single}"
     if os.path.exists(file_loc):
@@ -413,18 +418,19 @@ def gaussian_profile_inter(M, R, wavelength):
         flux = flux_inter[i] + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
         total_flux_lines_int.append(flux)
     total_flux_lines_int = np.array(total_flux_lines_int)
-    plt.figure()
-    plt.plot(np.log10(inter_data), np.log10(total_flux_lines_int) + 30)
-    #plt.plot(wavelength, np.log10(total_flux) + 30, c='red')
-    #plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
-    #plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
-    #plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
-    #plt.plot(wavelength, flux_H_alpha, linestyle = '--', color='cyan')
-    plt.xlim(2.5,4.5)
-    plt.ylim(0,6)
-    plt.xlabel("\(\log{\lambda} (\mathring{A})\)")
-    plt.ylabel("\(\log{f_{\lambda}}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1}) \)")
-    plt.show()
+    if plot = True:
+        plt.figure()
+        plt.plot(np.log10(inter_data), np.log10(total_flux_lines_int) + 30)
+        #plt.plot(wavelength, np.log10(total_flux) + 30, c='red')
+        #plt.plot(wavelength, total_flux, linestyle='--', color = 'red')
+        #plt.plot(wavelength, flux_H_beta, linestyle='--', color='green')
+        #plt.plot(wavelength, flux_H_lya, linestyle = '--', color='yellow')
+        #plt.plot(wavelength, flux_H_alpha, linestyle = '--', color='cyan')
+        plt.xlim(2.5,4.5)
+        plt.ylim(0,6)
+        plt.xlabel("\(\log{\lambda} (\mathring{A})\)")
+        plt.ylabel("\(\log{f_{\lambda}}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1}) \)")
+        plt.show()
     
     
 
@@ -484,70 +490,9 @@ def merged_plot_single(n_single, wavelength):
     plt.annotate("",xy=(3.668,2.36), xycoords='data', xytext=(3.659,3.275), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
     plt.text(3.488,-0.06,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
     plt.annotate("",xy=(3.657,1.37), xycoords='data', xytext=(3.5,-0.06), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-    plt.show()
-
-
-
-def delta_plot(M,R):
-    print(f"INPUT PARAMS: M = {M} kg, R = {R} m")
-    sigma_gal =np.sqrt(M*G/R) # m/s
-    print(f"SIGMA GAL: {sigma_gal} m/s")
-    #Hbeta
-    lambda_data = wavelength
-    #lambda_data = np.linspace(1,7500,1*10**5)
-    print(f"wavelength data: {lambda_data}")
-    #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
-    lambda_peak_array = [4861, 1215, 6563, 4471, 1640, 4686, 3203, 4541]
-    lambda_peak_array = np.array(lambda_peak_array)
-    sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
-    print(f"SIGMA LINE: {sigma_line} Angstrom")
-    #plt.figure()
-    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
-    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
-    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
-    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
-    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) + 30}")
-    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
-    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
-    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2)*M_sun)
-    print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
-    total_flux_delta = []
-    for i in range(len(wavelength)):
-        if abs(wavelength[i] - lambda_peak_array[0]) < 10:
-            total_flux_delta.append(H_beta_peak_Intensity)
-        elif abs(wavelength[i] - lambda_peak_array[1]) < 10:
-            total_flux_delta.append(H_lya_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[2]) < 10:
-            total_flux_delta.append(H_alpha_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[3]) < 10:
-            total_flux_delta.append(HeI_4471_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[4]) < 10:
-            total_flux_delta.append(HeII_1640_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[5]) < 10:
-            total_flux_delta.append(HeII_3203_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[6]) < 10:
-            total_flux_delta.append(HeII_4541_peak_intensity)
-        elif abs(wavelength[i] - lambda_peak_array[7]) < 10:
-            total_flux_delta.append(HeII_4686_peak_intensity)
-        else:
-            total_flux_delta.append(total_flux[i])
-    plt.figure()
-    plt.plot(wavelength, np.log10(total_flux_delta)+30)
-    plt.ylim(0,7)
-    plt.xlim(0,7000)
-    plt.show()
-        
+    plt.show() 
                             
             
-    
-
 
 def gaussian_profile_multiple_timescales(M, R):
     sigma_gal =np.sqrt(M*G/R) # m/s

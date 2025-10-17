@@ -1,0 +1,7 @@
+# Steffan Rhys Thomas October 2025 (L4)
+# Information regarding Python files and functions
+
+# File 1: import_spectum.py
+#      	  Imports: spectrum data from Schearer 2002 from a list of input parameters.
+#	  Outputs: wavelength, flux and age data
+#	  Optional parameters: Model input parameters: e.g. mass loss, imf (mass upper/lower), option to plot graph of spectra
