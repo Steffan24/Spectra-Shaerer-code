@@ -1,0 +1,37 @@
+# File 2: import_emission_lines.py
+
+### MODULES ###
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+from astropy.io import ascii
+import latex
+import os
+
+### PLOTTING PARAMS ###
+plt.rcParams["font.size"] = 30
+plt.rcParams["legend.fontsize"] = 30
+plt.rcParams["figure.frameon"] = False
+plt.rcParams["figure.titlesize"] = 16
+plt.rcParams["text.usetex"] = True
+plt.rcParams["figure.subplot.wspace"] = 0.03
+plt.rcParams["legend.frameon"] = False
+plt.rcParams["axes.linewidth"] = 1.75
+
+### VARIABLES (unchanged as of 07/10/25)  ###
+ttt = 'ge0' #Options - ge0: no mass loss, mdt: with mass loss
+imf = 'sal'
+mup = '500'
+low = "001"
+sfh = 'is5'
+
+
+n_single = 31 #SED of population (single plotting)
+
+n_array = np.linspace(31,1030, 999, dtype='int') # SED (multiple plotting)
+
+### IMPORT LINES ###
+
+def import_data(n):
+    

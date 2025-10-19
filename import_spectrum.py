@@ -111,7 +111,7 @@ def plot(n, SED_data):
         log_SED = np.log10(SED_data["SED_flux"])
         log_wavelength = np.log10(SED_data["wavelengths"])
         plt.figure()
-        plt.plot(np.log10(lambda_sun), log_B + 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 2)
+        plt.plot(np.log10(lambda_sun), log_B + 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
         plt.plot(log_wavelength, log_SED + 30,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
         #plt.xlim(0,7500)
         plt.ylim(0,8)
@@ -123,7 +123,7 @@ def plot(n, SED_data):
         
     elif n == 'multi':
         fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-        ax1.plot(np.log10(lambda_sun), log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 2)
+        ax1.plot(np.log10(lambda_sun), log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
         ax1.plot(np.log10(lambda_blackbody), log_blackbody + 30, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
         cmap = 'viridis'
         ages = np.array([a[0] for a in SED_data["ages"]])

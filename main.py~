@@ -1,0 +1,3 @@
+# main.py
+
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os

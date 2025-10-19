@@ -5,3 +5,7 @@
 #      	  Imports: spectrum data from Schearer 2002 from a list of input parameters.
 #	  Outputs: wavelength, flux and age data
 #	  Optional parameters: Model input parameters: e.g. mass loss, imf (mass upper/lower), option to plot graph of spectra
+
+# File 2: import_emission_lines.py
+#      	  Imports: emission line data from Schaerer 2002 from a list of input paeameters matching that of import_spectrum.py
+#	  Outputs: Full spectrum data including emission lines, option to plot spectra
