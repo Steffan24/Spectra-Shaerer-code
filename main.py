@@ -2,9 +2,9 @@
 
 from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
-from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n
+from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z
 import plotting_params
-from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra
+from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted
 
 SED_data = import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array)
 
@@ -21,3 +21,11 @@ flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203
 total_flux_lines = full_spectra(n, SED_data["wavelengths"], flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686, SED_data)
 
 plot_full_spectra(n, total_flux_lines, SED_data)
+
+flux_z, wavelength_z = redshifting(n,total_flux_lines, SED_data, z)
+
+flux_zab = AB_magnitude_conversion(flux_z, wavelength_z)
+
+LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K = import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max)
+
+plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K)

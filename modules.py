@@ -7,3 +7,4 @@ from matplotlib.colors import Normalize
 from astropy.io import ascii
 import latex
 import os
+from astropy.cosmology import WMAP9 as cosmo

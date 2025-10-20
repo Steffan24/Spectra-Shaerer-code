@@ -1,7 +1,7 @@
-# functions.py
+5# functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -232,7 +232,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data):
     if n == 'single':
         wavelength = SED_data["wavelengths"]
         plt.figure()
-        plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 30)
+        plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 30, lw = 2)
         plt.ylabel("logs")
         plt.xlim(2.5, 4.5)
         plt.ylim(-2,6)
@@ -262,7 +262,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data):
         for i in range(len(all_ages)):
             wavelength = SED_data["wavelengths"][i]
             flux = total_flux_lines[i]
-            ax1.plot(np.log10(wavelength), np.log10(flux) + 30, color=colours[i])
+            ax1.plot(np.log10(wavelength), np.log10(flux) + 30, color=colours[i], lw = 2)
 
         ax1.set_xlim(2, 5.5)
         ax1.set_ylim(-2, 7)
@@ -276,5 +276,62 @@ def plot_full_spectra(n, total_flux_lines, SED_data):
         plt.show()
             
             
-            
+def redshifting(n, total_flux_lines, SED_data, z):
+     if n == 'single':
+         comoving_d = cosmo.comoving_distance(z)
+         print(f"comoving_d: {comoving_d} Mpc")
+         d_lumo = (1 + z)* comoving_d
+         d_lumo_cm = (d_lumo * 10**6) * pc
+
+         wavelength = SED_data["wavelengths"]
+
+         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z))
+         wavelength_z = wavelength * (1 + z)
+
+         flux_z = flux_z.value
+
+         print(flux_z)
+
+         return flux_z, wavelength_z
+
+
         
+def AB_magnitude_conversion(flux_z, wavelength_z):
+    flux_zab = -2.5*np.log10(flux_z) - 2.402 - 5.0*np.log10(wavelength_z)
+    print(flux_zab)
+    return flux_zab
+
+def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max):
+    LR_IZJ = np.linspace(LR_IZJ_min, LR_IZJ_max,3)* 10**4
+    LR_HK = np.linspace(LR_HK_min, LR_HK_max,3)* 10**4
+    MR_IZ = np.linspace(MR_IZ_min, MR_IZ_max,3)* 10**4
+    MR_J = np.linspace(MR_J_min, MR_J_max,3)* 10**4
+    MR_H = np.linspace(MR_H_min, MR_H_max,3)* 10**4
+    MR_K = np.linspace(MR_K_min, MR_K_max,3)* 10**4
+    return LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K
+
+def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K):
+    fig, ax1 = plt.subplots()
+    ax1.set_xlabel("\(\lambda (\mathring{A})\)")
+    ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)")
+    ax1.plot(wavelength_z, np.log10(flux_z))
+
+    ax2 = ax1.twinx()
+    ax2.set_ylabel("\(AB Magnitudes\)")
+    ax2.plot(wavelength_z, flux_zab)
+
+    print(LR_IZJ)
+
+    ax1.plot(LR_IZJ, np.array([-70, -70, -70]))
+    ax1.plot(LR_HK, np.array([-70, -70, -70]))
+    ax1.plot(MR_IZ, np.array([-70, -70, -70]))
+    ax1.plot(MR_J, np.array([-70, -70, -70]))
+    ax1.plot(MR_H, np.array([-70, -70, -70]))
+    ax1.plot(MR_K, np.array([-70, -70, -70]))
+
+    ax1.set_xlim(100,90000)
+    ax2.set_ylim(max(flux_zab), min(flux_zab))
+
+    plt.show()
+    
+
