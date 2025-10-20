@@ -1,0 +1,27 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import plotting_params
+
+M = np.linspace(0, 100, 100)
+
+#SALPETER IMF
+frac_sal = M**(-2.35)
+
+#SCALO IMF
+frac_scalo = []
+for M < 1:
+    frac = M**(-1.25)
+    frac_scalo.append(frac)
+for M > 10:
+    frac = M**(-3)
+    frac_scalo.append(frac)
+for M < 10 and M > 1:
+    frac = M**(-2.35)
+    frac_scalo.append(frac)
+
+plt.figure()
+plt.plot(M, frac_sal, c='blue', label = '\(salpeter\)')
+plt.plot(M, frac_scalo, c='green', label = '\(scalo\)')
+plt.xlabel("\(Stellar mass (M_{\odot})\)")
+plt.ylabel("\(\frac{dN}{dM}\)")
+plt.show()
