@@ -8,3 +8,5 @@ from astropy.io import ascii
 import latex
 import os
 from astropy.cosmology import WMAP9 as cosmo
+from scipy import interpolate
+

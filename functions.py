@@ -1,7 +1,7 @@
 5# functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -121,6 +121,21 @@ def blackbody(T):
     log_blackbody = np.log10(blackbody)
     return lambda_blackbody, blackbody, log_blackbody
 
+def interpolate_SED(SED_data, n):
+    if n == 'single':
+        x_new = np.linspace(min(SED_data["wavelengths"]), max(SED_data["wavelengths"]), 1*10**6)
+        y = SED_data["SED_flux"]
+        x = SED_data["wavelengths"]
+        interpolated_wavelengths = interpolate.interp1d(x,y)
+        interpolated_fluxes = interpolated_wavelengths(x_new)
+        SED_data = {"ages": SED_data["ages"],
+                    "wavelengths": x_new,
+                    "SED_flux": np.array(interpolated_fluxes)}
+        return SED_data
+    
+                    
+    
+
 def import_lines(ttt, imf, mup, low, sfh):
     #read data
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.22"
@@ -216,7 +231,7 @@ def full_spectra(n, wavelength, flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_44
             flux = (SED_data["SED_flux"][i]) + flux_H_beta[i] + flux_H_lya[i] + flux_H_alpha[i] + flux_H_4471[i] + flux_HII_1640[i] + flux_HII_3203[i] + flux_HII_4541[i] + flux_HII_4686[i]
             total_flux_lines.append(flux)
         total_flux_lines = np.array(total_flux_lines)
-    elif n == 'multi':
+    if n == 'multi':
         total_flux_lines = []
         for i in range(len(SED_data["ages"])):
             wavelength = (SED_data["wavelengths"][i])
@@ -280,12 +295,11 @@ def redshifting(n, total_flux_lines, SED_data, z):
      if n == 'single':
          comoving_d = cosmo.comoving_distance(z)
          print(f"comoving_d: {comoving_d} Mpc")
-         d_lumo = (1 + z)* comoving_d
-         d_lumo_cm = (d_lumo * 10**6) * pc
+         d_lumo_cm = (1 + z)* (comoving_d * (3.086*10**24))
 
          wavelength = SED_data["wavelengths"]
 
-         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z))
+         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z)) * M_sun
          wavelength_z = wavelength * (1 + z)
 
          flux_z = flux_z.value
@@ -329,7 +343,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.plot(MR_H, np.array([-70, -70, -70]))
     ax1.plot(MR_K, np.array([-70, -70, -70]))
 
-    ax1.set_xlim(100,90000)
+    ax1.set_xlim(6000,28000)
     ax2.set_ylim(max(flux_zab), min(flux_zab))
 
     plt.show()
