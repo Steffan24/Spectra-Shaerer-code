@@ -1,7 +1,7 @@
 5# functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -315,6 +315,9 @@ def AB_magnitude_conversion(flux_z, wavelength_z):
     print(flux_zab)
     return flux_zab
 
+def magnitudes_to_flux(mag, wavelength_z):
+    return 10 ** (-(mag + 2.402 + 5.0*np.log10(wavelength))/2.5)
+
 def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max):
     LR_IZJ = np.linspace(LR_IZJ_min, LR_IZJ_max,3)* 10**4
     LR_HK = np.linspace(LR_HK_min, LR_HK_max,3)* 10**4
@@ -328,23 +331,46 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)")
-    ax1.plot(wavelength_z, np.log10(flux_z))
+    ax1.plot(np.log10(wavelength_z), (flux_z))
 
-    ax2 = ax1.twinx()
-    ax2.set_ylabel("\(AB Magnitudes\)")
-    ax2.plot(wavelength_z, flux_zab)
+    #ax2 = ax1.twinx()
+    #ax2.plot(np.log10(wavelength_z), AB_magnitude_conversion(flux_z,wavelength_z))
+
+    def AB_magnitude_conversion_single(log_flux, wavelength_ref):
+        flux = 10**log_flux
+        return -2.5*np.log10(flux) - 2.402 - 5.0*np.log10(wavelength_ref)
+
+    def magnitudes_to_flux_single(mag, wavelength_ref):
+        flux = 10 ** (-(mag + 2.402 + 5.0*np.log10(wavelength_ref))/2.5)
+        return np.log10(flux)
+
+    mean_lambda = np.mean(wavelength_z)
+
+    # Define transformation functions for the right axis
+    def flux_to_mag(y):
+        return AB_magnitude_conversion_single(y, mean_lambda)
+
+    def mag_to_flux(y):
+        return magnitudes_to_flux_single(y, mean_lambda)
+
+    ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+    #ax2.set_ylabel(r"$AB\ Magnitude$")
+
+    #ax2.plot(wavelength_z, flux_zab)
 
     print(LR_IZJ)
 
-    ax1.plot(LR_IZJ, np.array([-70, -70, -70]))
-    ax1.plot(LR_HK, np.array([-70, -70, -70]))
-    ax1.plot(MR_IZ, np.array([-70, -70, -70]))
-    ax1.plot(MR_J, np.array([-70, -70, -70]))
-    ax1.plot(MR_H, np.array([-70, -70, -70]))
-    ax1.plot(MR_K, np.array([-70, -70, -70]))
+    #ax1.plot(LR_IZJ, np.array([-70, -70, -70]))
+    #ax1.plot(LR_HK, np.array([-70, -70, -70]))
+    #ax1.plot(MR_IZ, np.array([-70, -70, -70]))
+    #ax1.plot(MR_J, np.array([-70, -70, -70]))
+    #ax1.plot(MR_H, np.array([-70, -70, -70]))
+    #ax1.plot(MR_K, np.array([-70, -70, -70]))
 
     ax1.set_xlim(6000,28000)
-    ax2.set_ylim(max(flux_zab), min(flux_zab))
+    #ax2.set_ylim(max(flux_zab), min(flux_zab))
+    #ax2.set_yscale('log', base=10)
+    ax2.invert_yaxis()
 
     plt.show()
     

@@ -9,4 +9,5 @@ import latex
 import os
 from astropy.cosmology import WMAP9 as cosmo
 from scipy import interpolate
+import matplotlib.ticker as mticker
 
