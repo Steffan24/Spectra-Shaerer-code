@@ -331,7 +331,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     fig, ax1 = plt.subplots()
     ax1.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)")
-    ax1.plot(np.log10(wavelength_z), (flux_z))
+    ax1.plot((wavelength_z), np.log10(flux_z))
 
     #ax2 = ax1.twinx()
     #ax2.plot(np.log10(wavelength_z), AB_magnitude_conversion(flux_z,wavelength_z))
@@ -346,31 +346,37 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
     mean_lambda = np.mean(wavelength_z)
 
-    # Define transformation functions for the right axis
     def flux_to_mag(y):
-        return AB_magnitude_conversion_single(y, mean_lambda)
+        return AB_magnitude_conversion_single((y), mean_lambda)
 
     def mag_to_flux(y):
-        return magnitudes_to_flux_single(y, mean_lambda)
+        return magnitudes_to_flux_single((y), mean_lambda)
+
+    ax1.set_ylim(-29, -26)
 
     ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
-    #ax2.set_ylabel(r"$AB\ Magnitude$")
 
-    #ax2.plot(wavelength_z, flux_zab)
+    ax2.set_ylabel(r"$AB\ Magnitude$")
 
     print(LR_IZJ)
 
-    #ax1.plot(LR_IZJ, np.array([-70, -70, -70]))
-    #ax1.plot(LR_HK, np.array([-70, -70, -70]))
-    #ax1.plot(MR_IZ, np.array([-70, -70, -70]))
-    #ax1.plot(MR_J, np.array([-70, -70, -70]))
-    #ax1.plot(MR_H, np.array([-70, -70, -70]))
-    #ax1.plot(MR_K, np.array([-70, -70, -70]))
+    ax1.plot(LR_IZJ, np.array([-28.5, -28.5, -28.5]), linewidth = 3)
+    ax1.text(9610,-28.377,'\(Low\ resolution:\ IZJ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(LR_HK, np.array([-28.5, -28.5, -28.5]), linewidth = 3)
+    ax1.text(17210,-28.377,'\(Low\ resolution:\ HK\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_IZ, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
+    ax1.text(7510,-28.886,'\(Med\ resolution:\ IZ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_J, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
+    ax1.text(11010,-28.886,'\(Med\ resolution:\ J\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_H, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
+    ax1.text(15010,-28.886,'\(Med\ resolution:\ H\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
+    ax1.text(20510,-28.886,'\(Med\ resolution:\ K\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
 
     ax1.set_xlim(6000,28000)
     #ax2.set_ylim(max(flux_zab), min(flux_zab))
     #ax2.set_yscale('log', base=10)
-    ax2.invert_yaxis()
+    #ax1.invert_yaxis()
 
     plt.show()
     
