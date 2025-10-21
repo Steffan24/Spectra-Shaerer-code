@@ -344,7 +344,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
         flux = 10 ** (-(mag + 2.402 + 5.0*np.log10(wavelength_ref))/2.5)
         return np.log10(flux)
 
-    mean_lambda = np.mean(wavelength_z)
+    mean_lambda = 17000
+    print(f"mean wavelength: {mean_lambda}")
 
     def flux_to_mag(y):
         return AB_magnitude_conversion_single((y), mean_lambda)
@@ -360,18 +361,18 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
     print(LR_IZJ)
 
-    ax1.plot(LR_IZJ, np.array([-28.5, -28.5, -28.5]), linewidth = 3)
-    ax1.text(9610,-28.377,'\(Low\ resolution:\ IZJ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.plot(LR_HK, np.array([-28.5, -28.5, -28.5]), linewidth = 3)
-    ax1.text(17210,-28.377,'\(Low\ resolution:\ HK\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.plot(MR_IZ, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
-    ax1.text(7510,-28.886,'\(Med\ resolution:\ IZ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.plot(MR_J, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
-    ax1.text(11010,-28.886,'\(Med\ resolution:\ J\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.plot(MR_H, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
-    ax1.text(15010,-28.886,'\(Med\ resolution:\ H\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3)
-    ax1.text(20510,-28.886,'\(Med\ resolution:\ K\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(LR_IZJ, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c='blue')
+    ax1.text(10680,-28.377,'\(IZJ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(LR_HK, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c= 'red')
+    ax1.text(19040,-28.377,'\(HK\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_IZ, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c ='green')
+    ax1.text(9150,-28.886,'\(IZ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_J, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='purple')
+    ax1.text(11750,-28.886,'\(J\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_H, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='blue')
+    ax1.text(16110,-28.886,'\(H\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
+    ax1.text(22000,-28.886,'\(K\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
 
     ax1.set_xlim(6000,28000)
     #ax2.set_ylim(max(flux_zab), min(flux_zab))
