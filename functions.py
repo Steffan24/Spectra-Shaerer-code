@@ -15,7 +15,7 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
             data = ascii.read(file_loc,guess = True, data_start = 0)
             wavelength = np.array(data['col1'])
             flux_raw = np.array(data['col3'])
-            SED_flux = flux_raw / (4*np.pi*(d**2)*M_sun)
+            SED_flux = flux_raw / (4*np.pi*(d**2))
             age_repeat = np.repeat(age_data, len(wavelength))
             SED_data = {"ages": np.array(age_repeat),
                         "wavelengths": np.array(wavelength),
@@ -33,7 +33,7 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
                 wavelength = np.array(data['col1'])
                 all_wavelengths.append(wavelength)
                 flux_raw = np.array(data['col3'])
-                SED_flux = flux_raw / (4*np.pi*(d**2)*M_sun)
+                SED_flux = flux_raw / (4*np.pi*(d**2))
                 age_repeat = np.repeat(age_data, len(wavelength))
                 all_fluxes.append(SED_flux)
                 all_ages.append(age_repeat)
@@ -50,20 +50,20 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
         log_SED = np.log10(SED_data["SED_flux"])
         log_wavelength = np.log10(SED_data["wavelengths"])
         plt.figure()
-        plt.plot(np.log10(lambda_sun), log_B + 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
-        plt.plot(log_wavelength, log_SED + 30,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
+        plt.plot(np.log10(lambda_sun), log_B + 10, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
+        plt.plot(log_wavelength, log_SED + 10,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
         #plt.xlim(0,7500)
         plt.ylim(0,8)
         plt.xlim(2,5.3)
         plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        plt.ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         plt.legend(bbox_to_anchor = [0.85,1], ncols = 2)
         plt.show()
         
     elif n == 'multi':
         fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-        ax1.plot(np.log10(lambda_sun), log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
-        ax1.plot(np.log10(lambda_blackbody), log_blackbody + 30, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
+        ax1.plot(np.log10(lambda_sun), log_B + 10, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
+        ax1.plot(np.log10(lambda_blackbody), log_blackbody + 10, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
         t_100 = np.log10((10**10)*(100)**(-2.5))
         t_50 = np.log10((10**10)*(50)**(-2.5))
         t_10 = np.log10((10**10)*(10)**(-2.5))
@@ -79,20 +79,20 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
             log_wavelength = np.log10(SED_data["wavelengths"][i])
             log_SED = np.log10(SED_data["SED_flux"][i])
             age = SED_data["ages"][i][0]
-            ax1.plot(log_wavelength, log_SED + 30, c=colours[i])
+            ax1.plot(log_wavelength, log_SED + 10, c=colours[i])
         ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        ax1.set_ylim(-2,6)
+        ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        ax1.set_ylim(0,8)
         ax1.set_xlim(2,5.2)
         ax1.legend(bbox_to_anchor = [1,1])
-        ax1.text(4.776,-0.38, '\(t_{100M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(4.709,-0.69), xycoords='data', xytext=(4.776,-0.38), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(4.4,0.2, '\(t_{50M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(4.286,0.18), xycoords='data', xytext=(4.387,0.32), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.994,2.68, '\(t_{10M_{\odot}}\)', bbox=dict(edgecolor='black', fc='None'))
-        ax1.annotate("",xy = (3.395,0.66), xycoords='data', xytext=(3.994,2.68), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(4.186, 1.28, '\(t_{5M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy = (3.379,0.02), xycoords='data', xytext=(4.186,1.28), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(4.776,-0.38 + 2.6, '\(t_{100M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(4.709,-0.69 + 2.6), xycoords='data', xytext=(4.776,-0.38 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(4.4,0.2 + 2.6, '\(t_{50M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(4.286,0.18 + 2.6), xycoords='data', xytext=(4.387,0.32 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.994,2.68 + 2.55, '\(t_{10M_{\odot}}\)', bbox=dict(edgecolor='black', fc='None'))
+        ax1.annotate("",xy = (3.395,0.66 + 2.55), xycoords='data', xytext=(3.994,2.68 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(4.186, 1.28 + 2.55, '\(t_{5M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy = (3.379,0.02 + 2.55), xycoords='data', xytext=(4.186,1.28 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
         plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
         labels = [f'\({min(ages)}\)','\(t_{100M_{\odot}}\)','\(t_{50M_{\odot}}\)','\(t_{10M_{\odot}}\)','\(t_{5M_{\odot}}\)', f'\({max(ages)}\)']
         ax2.set_yticks([min(ages),t_100, t_50, t_10, t_5,max(ages)], labels=labels)
@@ -102,11 +102,11 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
 
 
 def sun_type_star():
-    lambda_sun = np.linspace(0, 300000 , 1*10**5) #angstrom
+    lambda_sun = np.linspace(0, 300000 , 1*10**7) #angstrom
     lambda_sun_cm = lambda_sun * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_sun_cm**5))*(1/(np.exp(h*c/(lambda_sun_cm*kb*T_sun)) - 1))
     B = B * (1*10**(-8))
-    B = 4*np.pi * B * (R_sun)**2 /((d**2)*M_sun)
+    B = 4*np.pi * B * (R_sun)**2 /((d**2))
     log_B = np.log10(B)
     return lambda_sun, B, log_B
 
@@ -117,7 +117,7 @@ def blackbody(T):
     lambda_blackbody_m = lambda_blackbody * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_blackbody_m**5))*(1/(np.exp(h*c/(lambda_blackbody_m*kb*T)) - 1))
     blackbody = B * (1*10**(-8))
-    blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2/ ((d**2)*100*M_sun)
+    blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2/ ((d**2)*100)
     log_blackbody = np.log10(blackbody)
     return lambda_blackbody, blackbody, log_blackbody
 
@@ -128,6 +128,7 @@ def interpolate_SED(SED_data, n):
         x = SED_data["wavelengths"]
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
+        print(f"INTERPOLATED: {interpolated_fluxes}")
         SED_data = {"ages": SED_data["ages"],
                     "wavelengths": x_new,
                     "SED_flux": np.array(interpolated_fluxes)}
@@ -164,21 +165,21 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
     lambda_peak_array = np.array(lambda_peak_array)
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
     print(f"SIGMA LINE: {sigma_line} Angstrom")
-    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2)*M_sun)
+    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2))
     print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
-    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2)*M_sun)
+    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2))
     print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
-    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2)*M_sun)
+    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2))
     print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
-    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2)*M_sun)
+    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2))
     print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
-    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2))
     print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) + 30}")
-    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2))
     print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
-    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2))
     print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
-    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2)*M_sun)
+    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2))
     print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
     flux_H_beta = []
     flux_H_lya = []
@@ -247,25 +248,25 @@ def plot_full_spectra(n, total_flux_lines, SED_data):
     if n == 'single':
         wavelength = SED_data["wavelengths"]
         plt.figure()
-        plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 30, lw = 2)
+        plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 10, lw = 2)
         plt.ylabel("logs")
         plt.xlim(2.5, 4.5)
-        plt.ylim(-2,6)
+        plt.ylim(2,9)
         plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        plt.ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        plt.text(3.696,0.542, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.689,1.337), xycoords='data', xytext=(3.729,0.852), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.05,5.23,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.856,2.795,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.4,1,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.645,1.395), xycoords='data', xytext=(3.575,1.014), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.136,4.35,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.210, 3.176), xycoords='data', xytext=(3.216,4.227), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.38,2.505,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.58,3.38,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.668,2.36), xycoords='data', xytext=(3.659,3.275), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.488,-0.06,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.657,1.37), xycoords='data', xytext=(3.5,-0.06), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        plt.ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        plt.text(3.696,0.542 + 2.55, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
+        plt.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        plt.text(3.05,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        plt.text(3.136,4.35 + 2.55,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        plt.text(3.38,2.505 + 2.55,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        plt.text(3.488,-0.06 + 2.55,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        plt.annotate("",xy=(3.657,1.37 + 2.55), xycoords='data', xytext=(3.5,-0.06 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         plt.show()
     elif n == 'multi':
         fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
@@ -277,12 +278,12 @@ def plot_full_spectra(n, total_flux_lines, SED_data):
         for i in range(len(all_ages)):
             wavelength = SED_data["wavelengths"][i]
             flux = total_flux_lines[i]
-            ax1.plot(np.log10(wavelength), np.log10(flux) + 30, color=colours[i], lw = 2)
+            ax1.plot(np.log10(wavelength), np.log10(flux) + 10, color=colours[i], lw = 2)
 
         ax1.set_xlim(2, 5.5)
         ax1.set_ylim(-2, 7)
         ax1.set_xlabel(r"$\log{\lambda}\ (\mathring{A})$")
-        ax1.set_ylabel(r"$\log{F_{\lambda}}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})$")
+        ax1.set_ylabel(r"$\log{F_{\lambda}}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})$")
 
         cbar = plt.colorbar(bar, cax=ax2, orientation='vertical')
         cbar.set_label(r"$\log{t}\ \mathrm{since\ ZAMS\ (yr)}$")
@@ -299,7 +300,7 @@ def redshifting(n, total_flux_lines, SED_data, z):
 
          wavelength = SED_data["wavelengths"]
 
-         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z)) * M_sun
+         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z)) 
          wavelength_z = wavelength * (1 + z)
 
          flux_z = flux_z.value
@@ -353,7 +354,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     def mag_to_flux(y):
         return magnitudes_to_flux_single((y), mean_lambda)
 
-    ax1.set_ylim(-29, -26)
+    ax1.set_ylim(-29, -25.5)
 
     ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
 
@@ -373,6 +374,9 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.text(16110,-28.886,'\(H\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
     ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
     ax1.text(22000,-28.886,'\(K\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(14230, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(17580, -26.838, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(24580, -25.814, r'\(z = 10\)', bbox=dict(edgecolor='white', fc='None'))
 
     ax1.set_xlim(6000,28000)
     #ax2.set_ylim(max(flux_zab), min(flux_zab))
