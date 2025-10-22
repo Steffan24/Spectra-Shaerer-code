@@ -22,9 +22,11 @@ flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203
 
 total_flux_lines = full_spectra(n, SED_data["wavelengths"], flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686, SED_data)
 
-plot_full_spectra(n, total_flux_lines, SED_data)
-
 flux_z, wavelength_z = redshifting(n,total_flux_lines, SED_data, z)
+
+plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z)
+
+
 
 flux_zab = AB_magnitude_conversion(flux_z, wavelength_z)
 

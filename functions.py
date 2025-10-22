@@ -123,12 +123,19 @@ def blackbody(T):
 
 def interpolate_SED(SED_data, n):
     if n == 'single':
-        x_new = np.linspace(min(SED_data["wavelengths"]), max(SED_data["wavelengths"]), 1*10**6)
-        y = SED_data["SED_flux"]
-        x = SED_data["wavelengths"]
+        mask = (SED_data["wavelengths"] < 40000)
+        y = SED_data["SED_flux"][mask]
+        x = SED_data["wavelengths"][mask]
+        x_new = np.linspace(min(x), max(x), 1*10**6)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
         print(f"INTERPOLATED: {interpolated_fluxes}")
+        plt.figure()
+        plt.plot(x, y, c='green')
+        plt.plot(x_new, interpolated_fluxes, c='blue')
+        plt.show()
+        print(f"orig: {len(x)}")
+        print(f"new: {len(x_new)}")
         SED_data = {"ages": SED_data["ages"],
                     "wavelengths": x_new,
                     "SED_flux": np.array(interpolated_fluxes)}
@@ -244,29 +251,36 @@ def full_spectra(n, wavelength, flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_44
     return total_flux_lines
     
 
-def plot_full_spectra(n, total_flux_lines, SED_data):
+def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
     if n == 'single':
         wavelength = SED_data["wavelengths"]
-        plt.figure()
-        plt.plot(np.log10(wavelength), np.log10(total_flux_lines) + 10, lw = 2)
-        plt.ylabel("logs")
-        plt.xlim(2.5, 4.5)
-        plt.ylim(2,9)
-        plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        plt.ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        plt.text(3.696,0.542 + 2.55, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.05,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.136,4.35 + 2.55,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.38,2.505 + 2.55,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        plt.text(3.488,-0.06 + 2.55,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        plt.annotate("",xy=(3.657,1.37 + 2.55), xycoords='data', xytext=(3.5,-0.06 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        fig, ax1 = plt.subplots()
+        ax1.plot(np.log10(wavelength), np.log10(total_flux_lines) + 10, lw = 2)
+        ax1.set_ylabel("logs")
+        ax1.set_xlim(2.5, 4.5)
+        ax1.set_ylim(2,9)
+        ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
+        ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        ax1.text(3.696,0.542 + 2.55, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.05,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.136,4.35 + 2.55,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.38,2.505 + 2.55,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.488,-0.06 + 2.55,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.657,1.37 + 2.55), xycoords='data', xytext=(3.5,-0.06 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax2 = ax1.twiny()
+        ax2.plot(np.log10(wavelength_z), total_flux_lines, alpha = 0)
+        ax2.set_xlim(3.54, 5.54)
+        ax2.set_xlabel("\(\log{\lambda}\ (\mathring{A})\ deredshift\ z = 10\)")
+        NIR = np.log10(np.array([0.8, 2.5])*(10**4))
+        ax2.plot(NIR, [8.661, 8.661], c = 'red', lw = 3)
+        ax2.text(4.443,8.5, '\(:\ HARMONI\ range\)', bbox=dict(edgecolor='white', fc = 'None'))
         plt.show()
     elif n == 'multi':
         fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
@@ -308,6 +322,7 @@ def redshifting(n, total_flux_lines, SED_data, z):
          print(flux_z)
 
          return flux_z, wavelength_z
+
 
 
         
