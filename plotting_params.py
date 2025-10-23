@@ -10,3 +10,4 @@ plt.rcParams["text.usetex"] = True
 plt.rcParams["figure.subplot.wspace"] = 0.03
 plt.rcParams["legend.frameon"] = False
 plt.rcParams["axes.linewidth"] = 1.75
+plt.rcParams["figure.subplot.hspace"] = 0

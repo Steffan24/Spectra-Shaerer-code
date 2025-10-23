@@ -4,9 +4,11 @@ from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticke
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z
 import plotting_params
-from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED
+from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH
 
 SED_data = import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array)
+opacity_data = import_opacity()
+skyline_data = import_OH()
 
 lambda_sun, B, log_B = sun_type_star()
 
@@ -32,4 +34,5 @@ flux_zab = AB_magnitude_conversion(flux_z, wavelength_z)
 
 LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K = import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max)
 
-plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K)
+plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data)
+

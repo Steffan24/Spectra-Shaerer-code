@@ -45,6 +45,37 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
     print(SED_data)
     return SED_data
 
+def import_opacity():
+    file_loc = "/home/steff/hsim/zackrisson_pop3_all/chtrans_nir_18504ft_lon30d_pwv0900um_zenith_smoothed2e-3um-1.dat"
+    data = ascii.read(file_loc, guess = True, data_start = 2)
+    wavelength_opacity = np.array(data['Wavelength'])
+    wavelength_opacity_angstroms = wavelength_opacity * (10**4)
+    transmittance_opacity = np.array(data['Transmittance'])
+    opacity_data = {"wavelength": wavelength_opacity_angstroms,
+                    "transmittance": transmittance_opacity}
+    return opacity_data
+
+def import_OH():
+    file_loc = "/home/steff/hsim/zackrisson_pop3_all/skylineOH.txt"
+    data = ascii.read(file_loc, guess = True, data_start = 2)
+    print(data)
+    wavelength_1 = data["wave1"]
+    print(f"wavelength_1: {wavelength_1}")
+    wavelength_2 = data["wave2"]
+    wavelength_full = np.concatenate((wavelength_1, wavelength_2))
+    flux_1 = data["flux"]
+    flux = np.concatenate((flux_1, flux_1))
+    print(f"len wavelength: {len(wavelength_full)}")
+    print(f"len flux: {len(flux)}")
+    print(f"final array: {wavelength_full}")
+    sort_indices = np.argsort(wavelength_full)
+    wavelength_full = wavelength_full[sort_indices]
+    flux = flux[sort_indices]
+    skyline_data = {"wavelength": np.array(wavelength_full),
+                    "flux": np.array(flux)}
+    return skyline_data
+    
+
 def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_blackbody):
     if n == 'single':
         log_SED = np.log10(SED_data["SED_flux"])
@@ -343,14 +374,12 @@ def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_I
     MR_K = np.linspace(MR_K_min, MR_K_max,3)* 10**4
     return LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K
 
-def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K):
-    fig, ax1 = plt.subplots()
-    ax1.set_xlabel("\(\lambda (\mathring{A})\)")
+def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data):
+    fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
+    ax4.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)")
     ax1.plot((wavelength_z), np.log10(flux_z))
 
-    #ax2 = ax1.twinx()
-    #ax2.plot(np.log10(wavelength_z), AB_magnitude_conversion(flux_z,wavelength_z))
 
     def AB_magnitude_conversion_single(log_flux, wavelength_ref):
         flux = 10**log_flux
@@ -369,7 +398,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     def mag_to_flux(y):
         return magnitudes_to_flux_single((y), mean_lambda)
 
-    ax1.set_ylim(-29, -25.5)
+    ax1.set_ylim(-29.5, -25)
 
     ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
 
@@ -378,25 +407,47 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     print(LR_IZJ)
 
     ax1.plot(LR_IZJ, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c='blue')
-    ax1.text(10680,-28.377,'\(IZJ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(10680,-28.377,'\(IZJ\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.plot(LR_HK, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c= 'red')
-    ax1.text(19040,-28.377,'\(HK\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(19040,-28.377,'\(HK\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.plot(MR_IZ, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c ='green')
-    ax1.text(9150,-28.886,'\(IZ\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(9150,-29,'\(IZ\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.plot(MR_J, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='purple')
-    ax1.text(11750,-28.886,'\(J\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(11750,-29,'\(J\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.plot(MR_H, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='blue')
-    ax1.text(16110,-28.886,'\(H\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
+    ax1.text(16110,-29,'\(H\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
-    ax1.text(22000,-28.886,'\(K\)',bbox=dict(edgecolor='white', fc = 'None'), fontsize = 18)
-    ax1.text(14230, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(17580, -26.838, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(24580, -25.814, r'\(z = 10\)', bbox=dict(edgecolor='white', fc='None'))
-
-    ax1.set_xlim(6000,28000)
+    ax1.text(22000,-29,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
+    ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(17580, -26.338, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(23450, -25.814, r'\(z = 10\)', bbox=dict(edgecolor='white', fc='None'))
+    NIR = (np.array([0.8, 2.5])*(10**4))
+    ax1.set_xlim(np.min(NIR),np.max(NIR))
     #ax2.set_ylim(max(flux_zab), min(flux_zab))
     #ax2.set_yscale('log', base=10)
     #ax1.invert_yaxis()
+    flux = skyline_data["flux"]*(10**-7)
+    norm_flux = (flux) *(10**(-10))
+    ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
+    ax3.plot((skyline_data["wavelength"]), np.log10(norm_flux))
+    ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+    ax4.set_ylim(0.25,1.05)
+    ax4.set_ylabel("\(T (\%)\)")
+    ax3.set_ylabel("\(f (erg/s/cm^2)\)")
+    pos1 = ax1.get_position()
+    pos3 = ax3.get_position()
+    pos4 = ax4.get_position()
+
+    ax1.spines['bottom'].set_visible(False)
+    ax3.spines['top'].set_visible(False)
+
+    # y-positions between subplots (midpoint between bottom and top)
+    y_solid = (pos1.y0 + pos3.y1) / 2
+    #y_dashed = (pos3.y0 + pos4.y1) / 2
+
+    # Solid line between top two subplots
+    fig.add_artist(plt.Line2D([0.125, 0.9], [y_solid, y_solid],
+                              transform=fig.transFigure, color='black', lw=1.5, linestyle = '--'))
 
     plt.show()
     
