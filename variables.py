@@ -13,7 +13,7 @@ n_single = 31 #SED of population (single plotting)
 
 n_array = np.linspace(31,1030, 999, dtype='int') # SED (multiple plotting)
 
-M_gauss = (10**9)*M_sun
+M_gauss = (10**8)*M_sun
 d_gauss = 100*pc
 
 save = False

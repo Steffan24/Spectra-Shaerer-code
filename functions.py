@@ -377,7 +377,7 @@ def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_I
 def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data):
     fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
     ax4.set_xlabel("\(\lambda (\mathring{A})\)")
-    ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)")
+    ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)", labelpad = 12)
     ax1.plot((wavelength_z), np.log10(flux_z))
 
 
@@ -398,7 +398,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     def mag_to_flux(y):
         return magnitudes_to_flux_single((y), mean_lambda)
 
-    ax1.set_ylim(-29.5, -25)
+    ax1.set_ylim(-29.5, -24)
 
     ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
 
@@ -419,33 +419,72 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
     ax1.text(22000,-29,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(17580, -26.338, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(23450, -25.814, r'\(z = 10\)', bbox=dict(edgecolor='white', fc='None'))
+    ax1.text(17580, -26, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(21200, -26, r"\(\begin{array}{c}"
+             r'Z = 10 \\ R = 3000 \\ \sigma_{inst} = 2.55\mathring{A} \\ \sigma_{He_{II1640}} = 3.94\mathring{A} \\ \sigma_{Ly-\alpha} = 2.92\mathring{A}'
+             r'\end{array}\)', bbox=dict(edgecolor='white', fc='None'))
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))
-    #ax2.set_ylim(max(flux_zab), min(flux_zab))
-    #ax2.set_yscale('log', base=10)
-    #ax1.invert_yaxis()
-    flux = skyline_data["flux"]*(10**-7)
-    norm_flux = (flux) *(10**(-10))
+    flux = skyline_data["flux"]#*(10**-7)
+    norm_flux = (flux) #*(10**(-10))
     ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
-    ax3.plot((skyline_data["wavelength"]), np.log10(norm_flux))
-    ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+    ax3.plot((skyline_data["wavelength"]),norm_flux)
+    #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+    ax4.set_ylim(0.25,1.1)
+    ax4.set_ylabel("\(T (\%)\)", labelpad = 6)
+    ax3.set_ylabel("\(f\)", labelpad = -5)
+    pos1 = ax1.get_position()
+    pos3 = ax3.get_position()
+    pos4 = ax4.get_position()
+
+    #ax1.spines['bottom'].set_visible(False)
+    #ax3.spines['top'].set_visible(False)
+    
+    y_solid = (pos1.y0 + pos3.y1) / 2
+
+    fig.add_artist(plt.Line2D([0.125, 0.9], [y_solid, y_solid],
+                              transform=fig.transFigure, color='black', lw=1.5, linestyle = '--'))
+
+    plt.show()
+
+
+
+    fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
+    ax4.set_xlabel("\(\lambda (\mathring{A})\)")
+    ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A})\)")
+    ax1.plot((wavelength_z), np.log10((flux_z*(10**8))))
+    
+    ax1.set_ylim(-23, -19)
+
+    ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+
+    ax2.set_ylabel(r"$AB\ Magnitude$")
+
+    print(LR_IZJ)
+
+    NIR = (np.array([0.8, 2.5])*(10**4))
+    ax1.set_xlim(np.min(NIR),np.max(NIR))
+    flux = skyline_data["flux"]#*(10**3)
+    norm_flux = (flux) #*(10**(-10))
+    ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
+    ax3.plot((skyline_data["wavelength"]), norm_flux)
+    #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
     ax4.set_ylim(0.25,1.05)
     ax4.set_ylabel("\(T (\%)\)")
-    ax3.set_ylabel("\(f (erg/s/cm^2)\)")
+    ax3.set_ylabel("\(f\)")
     pos1 = ax1.get_position()
     pos3 = ax3.get_position()
     pos4 = ax4.get_position()
 
     ax1.spines['bottom'].set_visible(False)
     ax3.spines['top'].set_visible(False)
-
-    # y-positions between subplots (midpoint between bottom and top)
+    
     y_solid = (pos1.y0 + pos3.y1) / 2
-    #y_dashed = (pos3.y0 + pos4.y1) / 2
 
-    # Solid line between top two subplots
+    ax1.axhline(mag_to_flux(27.2), 0,1, c='red', ls = '--', label = '\(10mas\ limiting\ magnitude\)')
+    ax1.axhline(mag_to_flux(26.3), 0,1, c='orange', ls = '--', label = '\(4mas\ limiting\ magnitude\)')
+    ax1.legend()
+
     fig.add_artist(plt.Line2D([0.125, 0.9], [y_solid, y_solid],
                               transform=fig.transFigure, color='black', lw=1.5, linestyle = '--'))
 
