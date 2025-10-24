@@ -157,7 +157,8 @@ def interpolate_SED(SED_data, n):
         mask = (SED_data["wavelengths"] < 40000)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
-        x_new = np.linspace(min(x), max(x), 1*10**6)
+        angstrom_per_pixel = 2.61
+        x_new = np.arange(min(x), max(x), angstrom_per_pixel)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
         print(f"INTERPOLATED: {interpolated_fluxes}")
@@ -298,7 +299,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
         ax1.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.136,4.35 + 2.55,'\(HII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.136,4.35 + 2.55,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(3.38,2.505 + 2.55,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
@@ -308,7 +309,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
         ax2 = ax1.twiny()
         ax2.plot(np.log10(wavelength_z), total_flux_lines, alpha = 0)
         ax2.set_xlim(3.54, 5.54)
-        ax2.set_xlabel("\(\log{\lambda}\ (\mathring{A})\ deredshift\ z = 10\)")
+        ax2.set_xlabel("\(\log{\lambda}\ (\mathring{A})\ redshift\ z = 10\)")
         NIR = np.log10(np.array([0.8, 2.5])*(10**4))
         ax2.plot(NIR, [8.661, 8.661], c = 'red', lw = 3)
         ax2.text(4.443,8.5, '\(:\ HARMONI\ range\)', bbox=dict(edgecolor='white', fc = 'None'))
@@ -419,7 +420,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
     ax1.text(22000,-29,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(17580, -26, r'\(HII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
+    ax1.text(17580, -26, r'\(HeII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
     ax1.text(21200, -26, r"\(\begin{array}{c}"
              r'Z = 10 \\ R = 3000 \\ \sigma_{inst} = 2.55\mathring{A} \\ \sigma_{He_{II1640}} = 3.94\mathring{A} \\ \sigma_{Ly-\alpha} = 2.92\mathring{A}'
              r'\end{array}\)', bbox=dict(edgecolor='white', fc='None'))
