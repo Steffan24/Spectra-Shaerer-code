@@ -152,12 +152,12 @@ def blackbody(T):
     log_blackbody = np.log10(blackbody)
     return lambda_blackbody, blackbody, log_blackbody
 
-def interpolate_SED(SED_data, n):
+def interpolate_SED(SED_data, n, z, R):
     if n == 'single':
         mask = (SED_data["wavelengths"] < 40000)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
-        angstrom_per_pixel = 2.61
+        angstrom_per_pixel = 18010/(R*2.3*(1+10))
         x_new = np.arange(min(x), max(x), angstrom_per_pixel)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
@@ -295,13 +295,13 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
         ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         ax1.text(3.696,0.542 + 2.55, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.05,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(2.85,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.136,4.35 + 2.55,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.38,2.505 + 2.55,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.136,4.35 + 2.6,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        #ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.3,5.792,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(3.488,-0.06 + 2.55,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
@@ -422,7 +422,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
     ax1.text(17580, -26, r'\(HeII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
     ax1.text(21200, -26, r"\(\begin{array}{c}"
-             r'Z = 10 \\ R = 3000 \\ \sigma_{inst} = 2.55\mathring{A} \\ \sigma_{He_{II1640}} = 3.94\mathring{A} \\ \sigma_{Ly-\alpha} = 2.92\mathring{A}'
+             r'Z = 10 \\ R = 3000 \\ \sigma_{He_{II1640}} = 2.61\mathring{A} \\ \sigma_{Ly-\alpha} = 1.93\mathring{A}'
              r'\end{array}\)', bbox=dict(edgecolor='white', fc='None'))
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))

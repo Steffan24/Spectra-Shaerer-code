@@ -20,6 +20,11 @@ save = False
 n = 'single'
 
 z = 10
+R = 3000
+
+
+
+
 
 #HARMONI spectograph resolution data (microm)
 
