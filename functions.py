@@ -157,7 +157,8 @@ def interpolate_SED(SED_data, n, z, R):
         mask = (SED_data["wavelengths"] < 40000)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
-        angstrom_per_pixel = 18010/(R*2.3*(1+10))
+        angstrom_per_pixel = 18010/(R*2.3*(1+z))
+        angstrom_redshifted = angstrom_per_pixel*(1+z)
         x_new = np.arange(min(x), max(x), angstrom_per_pixel)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
@@ -171,7 +172,7 @@ def interpolate_SED(SED_data, n, z, R):
         SED_data = {"ages": SED_data["ages"],
                     "wavelengths": x_new,
                     "SED_flux": np.array(interpolated_fluxes)}
-        return SED_data
+        return SED_data, angstrom_redshifted
     
                     
     
@@ -283,7 +284,7 @@ def full_spectra(n, wavelength, flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_44
     return total_flux_lines
     
 
-def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
+def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z):
     if n == 'single':
         wavelength = SED_data["wavelengths"]
         fig, ax1 = plt.subplots()
@@ -309,7 +310,9 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z):
         ax2 = ax1.twiny()
         ax2.plot(np.log10(wavelength_z), total_flux_lines, alpha = 0)
         ax2.set_xlim(3.54, 5.54)
-        ax2.set_xlabel("\(\log{\lambda}\ (\mathring{A})\ redshift\ z = 10\)")
+        ax2.set_xlabel(
+    rf"\textbf{{$\log \lambda\, (\mathrm{{\AA}})\ redshift\ z = {z}$}}"
+)
         NIR = np.log10(np.array([0.8, 2.5])*(10**4))
         ax2.plot(NIR, [8.661, 8.661], c = 'red', lw = 3)
         ax2.text(4.443,8.5, '\(:\ HARMONI\ range\)', bbox=dict(edgecolor='white', fc = 'None'))
@@ -375,7 +378,7 @@ def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_I
     MR_K = np.linspace(MR_K_min, MR_K_max,3)* 10**4
     return LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K
 
-def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data):
+def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, angstrom_redshifted, R):
     fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
     ax4.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)", labelpad = 12)
@@ -421,9 +424,10 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.text(22000,-29,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
     ax1.text(17580, -26, r'\(HeII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(21200, -26, r"\(\begin{array}{c}"
-             r'Z = 10 \\ R = 3000 \\ \sigma_{He_{II1640}} = 2.61\mathring{A} \\ \sigma_{Ly-\alpha} = 1.93\mathring{A}'
-             r'\end{array}\)', bbox=dict(edgecolor='white', fc='None'))
+    angstrom_Ly = (angstrom_redshifted/18010) * 13350
+    ax1.text(21200, -26, rf"$\begin{{array}}{{c}} " \
+        rf"Z = {z} \\ R = {R} \\ \sigma_{{He_{{II1640}}}} = {angstrom_redshifted:.2f}\,\mathring{{A}} \\ \sigma_{{Ly-\alpha}} = {angstrom_Ly:.2f}\,\mathring{{A}}" \
+        rf"\end{{array}}$", bbox=dict(edgecolor='white', fc='None'))
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))
     flux = skyline_data["flux"]#*(10**-7)

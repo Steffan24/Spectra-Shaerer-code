@@ -19,7 +19,7 @@ d_gauss = 100*pc
 save = False
 n = 'single'
 
-z = 10
+z = 11
 R = 3000
 
 
