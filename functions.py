@@ -1,7 +1,7 @@
 5# functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -78,7 +78,7 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
         plt.plot(np.log10(lambda_sun), log_B - 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
         plt.plot(log_wavelength, log_SED - 30,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
         #plt.xlim(0,7500)
-        #plt.ylim(0,8)
+        plt.ylim(0,8)
         plt.xlim(2,5.3)
         plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
         plt.ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
@@ -106,18 +106,18 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
             age = SED_data["ages"][i][0]
             ax1.plot(log_wavelength, log_SED - 30, c=colours[i])
         ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
-        ax1.set_ylim(0,8)
+        ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot M_{\odot}^{-1})\)")
+        ax1.set_ylim(-1.8,7)
         ax1.set_xlim(2,5.2)
-        ax1.legend(bbox_to_anchor = [1,1])
+        ax1.legend(loc='upper right')
         ax1.text(4.776,-0.38 + 2.6, '\(t_{100M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(4.709,-0.69 + 2.6), xycoords='data', xytext=(4.776,-0.38 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.annotate("",xy=(4.383,0.7), xycoords='data', xytext=(4.776,-0.38 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(4.4,0.2 + 2.6, '\(t_{50M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(4.286,0.18 + 2.6), xycoords='data', xytext=(4.387,0.32 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.annotate("",xy=(4.024,1.14), xycoords='data', xytext=(4.387,0.32 + 2.6), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(3.994,2.68 + 2.55, '\(t_{10M_{\odot}}\)', bbox=dict(edgecolor='black', fc='None'))
-        ax1.annotate("",xy = (3.395,0.66 + 2.55), xycoords='data', xytext=(3.994,2.68 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.annotate("",xy = (3.363,2.26), xycoords='data', xytext=(3.994,2.68 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(4.186, 1.28 + 2.55, '\(t_{5M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy = (3.379,0.02 + 2.55), xycoords='data', xytext=(4.186,1.28 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.annotate("",xy = (3.252,1.65), xycoords='data', xytext=(4.186,1.28 + 2.55), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
         plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
         labels = [f'\({min(ages)}\)','\(t_{100M_{\odot}}\)','\(t_{50M_{\odot}}\)','\(t_{10M_{\odot}}\)','\(t_{5M_{\odot}}\)', f'\({max(ages)}\)']
         ax2.set_yticks([min(ages),t_100, t_50, t_10, t_5,max(ages)], labels=labels)
@@ -131,7 +131,7 @@ def sun_type_star():
     lambda_sun_cm = lambda_sun * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_sun_cm**5))*(1/(np.exp(h*c/(lambda_sun_cm*kb*T_sun)) - 1))
     B = B * (1*10**(-8))
-    #B = 4*np.pi * B * (R_sun)**2 /((d**2))
+    B = 4*np.pi * B * (R_sun)**2# /((d**2))
     log_B = np.log10(B)
     return lambda_sun, B, log_B
 
@@ -142,7 +142,7 @@ def blackbody(T):
     lambda_blackbody_m = lambda_blackbody * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_blackbody_m**5))*(1/(np.exp(h*c/(lambda_blackbody_m*kb*T)) - 1))
     blackbody = B * (1*10**(-8))
-    #blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2/ ((d**2)*100)
+    blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2#/ ((d**2)*100)
     log_blackbody = np.log10(blackbody)
     return lambda_blackbody, blackbody, log_blackbody
 
@@ -153,8 +153,8 @@ def interpolate_SED(SED_data, n, z, R):
         x = SED_data["wavelengths"][mask]
         resolution = 1500/R
         print(f"Resolution: {resolution}")
-        sampling = resolution/5
-        print(f"Sampling: {sampling}")
+        sampling = resolution/(5)
+        print(f"Sampling pre redshift: {sampling}")
         x_new = np.arange(min(x), max(x), sampling)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
@@ -176,6 +176,7 @@ def import_lines(ttt, imf, mup, low, sfh):
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.22"
     if os.path.exists(file_loc):
         data = ascii.read(file_loc,guess = True, data_start = 0)
+       # print(data['col15'])
         age_log = data['col1']
         H_beta = data['col5']
         H_lya = data['col7'] * H_beta
@@ -190,7 +191,8 @@ def import_lines(ttt, imf, mup, low, sfh):
 
 def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541):
     print(f"INPUT PARAMS: M = {M/1000} kg, R = {R/100} m")
-    sigma_gal = 30000 #np.sqrt((M/1000)*G/(R/100)) # m/s
+    print(f"LEN WAVELENGTH: {len(wavelength)}")
+    sigma_gal = 30000 #np.sqrt((M/1000)*G/(R/100)) # m/s (or 30000)
     print(f"SIGMA GAL: {sigma_gal} m/s")
     #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
     lambda_peak_array = [4861, 1215, 6563, 4471, 1640, 4686, 3203, 4541]
@@ -235,7 +237,7 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
         flux_H_4471_1 = ((HeI_4471_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[3]))*exponential_4)
         flux_H_4471.append(flux_H_4471_1)
         exponential_5 = np.exp(((wavelength[i] - lambda_peak_array[4])**2)/(-2*(sigma_line[4])**2))
-        flux_H_1640_1 = ((HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4]))*exponential_5)
+        flux_H_1640_1 = ((HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])) * exponential_5)
         flux_HII_1640.append(flux_H_1640_1)
         exponential_6 = np.exp(((wavelength[i] - lambda_peak_array[5])**2)/(-2*(sigma_line[5])**2))
         flux_H_4686_1 = ((HeII_4686_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[5]))*exponential_6)
@@ -254,6 +256,37 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
     flux_HII_4686 = np.array(flux_HII_4686)
     flux_HII_3203 = np.array(flux_HII_3203)
     flux_HII_4541 = np.array(flux_HII_4541)
+
+    plt.figure()
+    plt.plot(wavelength, np.log10(flux_HII_1640) - 30)
+    plt.plot(wavelength, np.log10(flux_H_lya) - 30)
+    plt.ylim(0,7)
+    plt.show()
+
+
+    sigma_gal = [30000, 150000, 300000]
+    data_ = Table()
+    for i in range(len(sigma_gal)):
+        sigma_line = (sigma_gal[i]/c_m) * np.array(lambda_peak_array)
+        print(f"SIGMA LINE: {sigma_line} Angstrom")
+        H_beta_peak_Intensity = (H_beta[0])#/(4*np.pi*(d**2))
+        HeII_1640_peak_intensity = (HeII_1640[0])#/(4*np.pi*(d**2))
+        print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) - 30}")
+        flux_HII_1640 = []
+        for j in range(len(wavelength)):
+            exponential_5 = np.exp(((wavelength[j] - lambda_peak_array[4])**2)/(-2*(sigma_line[4])**2))
+            flux_H_1640_1 = ((HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])) * exponential_5)
+            flux_HII_1640.append(flux_H_1640_1)
+        data_[f'sigma_{sigma_gal[i]}']= np.array(flux_HII_1640)
+    data_['wavelength'] = wavelength
+    ascii.write(data_, 'sigma_check.dat', format='basic')
+    print("saved file")
+    
+
+    
+
+
+    
     return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686
 
 

@@ -1,6 +1,6 @@
 # main.py
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker, Table
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R
 import plotting_params
