@@ -1,4 +1,4 @@
-5# functions.py
+# functions.py
 # list of functions used
 
 from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table
@@ -271,7 +271,7 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
         print(f"SIGMA LINE: {sigma_line} Angstrom")
         H_beta_peak_Intensity = (H_beta[0])#/(4*np.pi*(d**2))
         HeII_1640_peak_intensity = (HeII_1640[0])#/(4*np.pi*(d**2))
-        print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) - 30}")
+        print(f"H_1640_peak_Intensity: {HeII_1640_peak_intensity}")
         flux_HII_1640 = []
         for j in range(len(wavelength)):
             exponential_5 = np.exp(((wavelength[j] - lambda_peak_array[4])**2)/(-2*(sigma_line[4])**2))
@@ -279,8 +279,20 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
             flux_HII_1640.append(flux_H_1640_1)
         data_[f'sigma_{sigma_gal[i]}']= np.array(flux_HII_1640)
     data_['wavelength'] = wavelength
-    ascii.write(data_, 'sigma_check.dat', format='basic')
+    ascii.write(data_, f'sigma_check_F_{HeII_1640_peak_intensity}.dat', format='basic', overwrite=True)
     print("saved file")
+    data_ = Table.read('sigma_check.dat', format='ascii.basic')
+    plt.figure(figsize=(8,5))
+    plt.plot(wavelength, data_['sigma_30000'])
+    plt.plot(wavelength, data_['sigma_150000'])
+    plt.plot(wavelength, data_['sigma_300000'])
+    plt.xlabel('Wavelength [Å]', fontsize=12)
+    plt.ylabel('Flux [arbitrary units]', fontsize=12)
+    plt.title('Gaussian Line Profiles for Different Velocity Dispersions', fontsize=13)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.show()
     
 
     
