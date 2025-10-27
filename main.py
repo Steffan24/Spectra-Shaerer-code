@@ -16,7 +16,7 @@ lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
 
 plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_blackbody)
 
-SED_data, angstrom_redshifted = interpolate_SED(SED_data, n, z, R)
+SED_data = interpolate_SED(SED_data, n, z, R)
 
 age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = import_lines(ttt, imf, mup, low, sfh)
 
@@ -34,5 +34,5 @@ flux_zab = AB_magnitude_conversion(flux_z, wavelength_z)
 
 LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K = import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max)
 
-plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, angstrom_redshifted, R)
+plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R)
 

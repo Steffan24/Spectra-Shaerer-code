@@ -15,7 +15,7 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
             data = ascii.read(file_loc,guess = True, data_start = 0)
             wavelength = np.array(data['col1'])
             flux_raw = np.array(data['col3'])
-            SED_flux = flux_raw / (4*np.pi*(d**2))
+            SED_flux = flux_raw #/ (4*np.pi*(d**2))
             age_repeat = np.repeat(age_data, len(wavelength))
             SED_data = {"ages": np.array(age_repeat),
                         "wavelengths": np.array(wavelength),
@@ -33,7 +33,7 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
                 wavelength = np.array(data['col1'])
                 all_wavelengths.append(wavelength)
                 flux_raw = np.array(data['col3'])
-                SED_flux = flux_raw / (4*np.pi*(d**2))
+                SED_flux = flux_raw #/ (4*np.pi*(d**2))
                 age_repeat = np.repeat(age_data, len(wavelength))
                 all_fluxes.append(SED_flux)
                 all_ages.append(age_repeat)
@@ -42,7 +42,6 @@ def import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array):
                     "SED_flux": all_fluxes}
     if save == True:
         np.save(f'{n}_saved_data_model_{ttt}_{imf}_{mup}_{low}_{sfh}', SED_data)
-    print(SED_data)
     return SED_data
 
 def import_opacity():
@@ -58,16 +57,11 @@ def import_opacity():
 def import_OH():
     file_loc = "/home/steff/hsim/zackrisson_pop3_all/skylineOH.txt"
     data = ascii.read(file_loc, guess = True, data_start = 2)
-    print(data)
     wavelength_1 = data["wave1"]
-    print(f"wavelength_1: {wavelength_1}")
     wavelength_2 = data["wave2"]
     wavelength_full = np.concatenate((wavelength_1, wavelength_2))
     flux_1 = data["flux"]
     flux = np.concatenate((flux_1, flux_1))
-    print(f"len wavelength: {len(wavelength_full)}")
-    print(f"len flux: {len(flux)}")
-    print(f"final array: {wavelength_full}")
     sort_indices = np.argsort(wavelength_full)
     wavelength_full = wavelength_full[sort_indices]
     flux = flux[sort_indices]
@@ -81,10 +75,10 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
         log_SED = np.log10(SED_data["SED_flux"])
         log_wavelength = np.log10(SED_data["wavelengths"])
         plt.figure()
-        plt.plot(np.log10(lambda_sun), log_B + 10, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
-        plt.plot(log_wavelength, log_SED + 10,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
+        plt.plot(np.log10(lambda_sun), log_B - 30, label = "\(Blackbody\ 1M_{\odot}\)", linestyle = '--', color = 'red', zorder = 3)
+        plt.plot(log_wavelength, log_SED - 30,c='darkblue',label = f'\({SED_data["ages"][0]} Myr\ since\ ZAMS\)', zorder = 1)
         #plt.xlim(0,7500)
-        plt.ylim(0,8)
+        #plt.ylim(0,8)
         plt.xlim(2,5.3)
         plt.xlabel("\(\log{\lambda}\ (\mathring{A})\)")
         plt.ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
@@ -93,8 +87,8 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
         
     elif n == 'multi':
         fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-        ax1.plot(np.log10(lambda_sun), log_B + 10, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
-        ax1.plot(np.log10(lambda_blackbody), log_blackbody + 10, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
+        ax1.plot(np.log10(lambda_sun), log_B - 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
+        ax1.plot(np.log10(lambda_blackbody), log_blackbody - 30, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
         t_100 = np.log10((10**10)*(100)**(-2.5))
         t_50 = np.log10((10**10)*(50)**(-2.5))
         t_10 = np.log10((10**10)*(10)**(-2.5))
@@ -110,7 +104,7 @@ def plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_bla
             log_wavelength = np.log10(SED_data["wavelengths"][i])
             log_SED = np.log10(SED_data["SED_flux"][i])
             age = SED_data["ages"][i][0]
-            ax1.plot(log_wavelength, log_SED + 10, c=colours[i])
+            ax1.plot(log_wavelength, log_SED - 30, c=colours[i])
         ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
         ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
         ax1.set_ylim(0,8)
@@ -137,7 +131,7 @@ def sun_type_star():
     lambda_sun_cm = lambda_sun * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_sun_cm**5))*(1/(np.exp(h*c/(lambda_sun_cm*kb*T_sun)) - 1))
     B = B * (1*10**(-8))
-    B = 4*np.pi * B * (R_sun)**2 /((d**2))
+    #B = 4*np.pi * B * (R_sun)**2 /((d**2))
     log_B = np.log10(B)
     return lambda_sun, B, log_B
 
@@ -148,31 +142,31 @@ def blackbody(T):
     lambda_blackbody_m = lambda_blackbody * 1*10**(-8)
     B = ((2*h*c**2)/(lambda_blackbody_m**5))*(1/(np.exp(h*c/(lambda_blackbody_m*kb*T)) - 1))
     blackbody = B * (1*10**(-8))
-    blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2/ ((d**2)*100)
+    #blackbody = 4*np.pi * blackbody* (R_sun*(13.8))**2/ ((d**2)*100)
     log_blackbody = np.log10(blackbody)
     return lambda_blackbody, blackbody, log_blackbody
 
 def interpolate_SED(SED_data, n, z, R):
     if n == 'single':
-        mask = (SED_data["wavelengths"] < 40000)
+        mask = (SED_data["wavelengths"] < 8000)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
-        angstrom_per_pixel = 18010/(R*2.3*(1+z))
-        angstrom_redshifted = angstrom_per_pixel*(1+z)
-        x_new = np.arange(min(x), max(x), angstrom_per_pixel)
+        resolution = 1500/R
+        print(f"Resolution: {resolution}")
+        sampling = resolution/5
+        print(f"Sampling: {sampling}")
+        x_new = np.arange(min(x), max(x), sampling)
         interpolated_wavelengths = interpolate.interp1d(x,y)
         interpolated_fluxes = interpolated_wavelengths(x_new)
-        print(f"INTERPOLATED: {interpolated_fluxes}")
+        #print(f"INTERPOLATED: {interpolated_fluxes}")
         plt.figure()
         plt.plot(x, y, c='green')
         plt.plot(x_new, interpolated_fluxes, c='blue')
         plt.show()
-        print(f"orig: {len(x)}")
-        print(f"new: {len(x_new)}")
         SED_data = {"ages": SED_data["ages"],
                     "wavelengths": x_new,
                     "SED_flux": np.array(interpolated_fluxes)}
-        return SED_data, angstrom_redshifted
+        return SED_data
     
                     
     
@@ -182,10 +176,8 @@ def import_lines(ttt, imf, mup, low, sfh):
     file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.22"
     if os.path.exists(file_loc):
         data = ascii.read(file_loc,guess = True, data_start = 0)
-        print(data)
         age_log = data['col1']
         H_beta = data['col5']
-        print(H_beta)
         H_lya = data['col7'] * H_beta
         H_alpha = data['col9'] * H_beta
         H_beta_ = data['col11'] * H_beta
@@ -198,29 +190,29 @@ def import_lines(ttt, imf, mup, low, sfh):
 
 def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541):
     print(f"INPUT PARAMS: M = {M/1000} kg, R = {R/100} m")
-    sigma_gal =np.sqrt((M/1000)*G/(R/100)) # m/s
+    sigma_gal = 30000 #np.sqrt((M/1000)*G/(R/100)) # m/s
     print(f"SIGMA GAL: {sigma_gal} m/s")
     #array in peak [H_beta, H_lya, H_alpha, HEI_4471, HeII1640, HeII_4686, HeII_3203, HeII_4541]]
     lambda_peak_array = [4861, 1215, 6563, 4471, 1640, 4686, 3203, 4541]
     lambda_peak_array = np.array(lambda_peak_array)
     sigma_line = (sigma_gal/c_m) * np.array(lambda_peak_array)
     print(f"SIGMA LINE: {sigma_line} Angstrom")
-    H_beta_peak_Intensity = (H_beta[0])/(4*np.pi*(d**2))
-    print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
-    H_lya_peak_intensity = (H_lya[0])/(4*np.pi*(d**2))
-    print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
-    H_alpha_peak_intensity = (H_alpha[0])/(4*np.pi*(d**2))
-    print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
-    HeI_4471_peak_intensity = (HeI_4471[0])/(4*np.pi*(d**2))
-    print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
-    HeII_1640_peak_intensity = (HeII_1640[0])/(4*np.pi*(d**2))
-    print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) + 30}")
-    HeII_3203_peak_intensity = (HeII_3203[0])/(4*np.pi*(d**2))
-    print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
-    HeII_4541_peak_intensity = (HeII_4541[0])/(4*np.pi*(d**2))
-    print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
-    HeII_4686_peak_intensity = (HeII_4686[0])/(4*np.pi*(d**2))
-    print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
+    H_beta_peak_Intensity = (H_beta[0])#/(4*np.pi*(d**2))
+    #print(f"H_beta_peak_Intensity: {np.log10(H_beta_peak_Intensity) + 30}")
+    H_lya_peak_intensity = (H_lya[0])#/(4*np.pi*(d**2))
+    #print(f"H_lya_peak_Intensity: {np.log10(H_lya_peak_intensity) + 30}")
+    H_alpha_peak_intensity = (H_alpha[0])#/(4*np.pi*(d**2))
+    #print(f"H_alpha_peak_Intensity: {np.log10(H_alpha_peak_intensity) + 30}")
+    HeI_4471_peak_intensity = (HeI_4471[0])#/(4*np.pi*(d**2))
+    #print(f"H_4471_peak_Intensity: {np.log10(HeI_4471_peak_intensity) + 30}")
+    HeII_1640_peak_intensity = (HeII_1640[0])#/(4*np.pi*(d**2))
+    print(f"H_1640_peak_Intensity: {np.log10(HeII_1640_peak_intensity) - 30}")
+    HeII_3203_peak_intensity = (HeII_3203[0])#/(4*np.pi*(d**2))
+    #print(f"H_3203_peak_Intensity: {np.log10(HeII_3203_peak_intensity) + 30}")
+    HeII_4541_peak_intensity = (HeII_4541[0])#/(4*np.pi*(d**2))
+    #print(f"H_4541_peak_Intensity: {np.log10(HeII_4541_peak_intensity) + 30}")
+    HeII_4686_peak_intensity = (HeII_4686[0])#/(4*np.pi*(d**2))
+    #print(f"H_4686_peak_Intensity: {np.log10(HeII_4686_peak_intensity) + 30}")
     flux_H_beta = []
     flux_H_lya = []
     flux_H_alpha = []
@@ -288,7 +280,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z):
     if n == 'single':
         wavelength = SED_data["wavelengths"]
         fig, ax1 = plt.subplots()
-        ax1.plot(np.log10(wavelength), np.log10(total_flux_lines) + 10, lw = 2)
+        ax1.plot(np.log10(wavelength), np.log10(total_flux_lines) - 30, lw = 2)
         ax1.set_ylabel("logs")
         ax1.set_xlim(2.5, 4.5)
         ax1.set_ylim(2,9)
@@ -349,12 +341,10 @@ def redshifting(n, total_flux_lines, SED_data, z):
 
          wavelength = SED_data["wavelengths"]
 
-         flux_z = total_flux_lines * ((d**2)/(d_lumo_cm**2)) * (1/(1 + z)) 
+         flux_z = total_flux_lines * (1/(d_lumo_cm**2)) * (1/(1 + z)) 
          wavelength_z = wavelength * (1 + z)
 
          flux_z = flux_z.value
-
-         print(flux_z)
 
          return flux_z, wavelength_z
 
@@ -363,7 +353,6 @@ def redshifting(n, total_flux_lines, SED_data, z):
         
 def AB_magnitude_conversion(flux_z, wavelength_z):
     flux_zab = -2.5*np.log10(flux_z) - 2.402 - 5.0*np.log10(wavelength_z)
-    print(flux_zab)
     return flux_zab
 
 def magnitudes_to_flux(mag, wavelength_z):
@@ -378,7 +367,7 @@ def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_I
     MR_K = np.linspace(MR_K_min, MR_K_max,3)* 10**4
     return LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K
 
-def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, angstrom_redshifted, R):
+def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R):
     fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
     ax4.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)", labelpad = 12)
@@ -424,16 +413,20 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.text(22000,-29,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'), fontsize = 18)
     ax1.text(13500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
     ax1.text(17580, -26, r'\(HeII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
-    angstrom_Ly = (angstrom_redshifted/18010) * 13350
-    ax1.text(21200, -26, rf"$\begin{{array}}{{c}} " \
-        rf"Z = {z} \\ R = {R} \\ \sigma_{{He_{{II1640}}}} = {angstrom_redshifted:.2f}\,\mathring{{A}} \\ \sigma_{{Ly-\alpha}} = {angstrom_Ly:.2f}\,\mathring{{A}}" \
-        rf"\end{{array}}$", bbox=dict(edgecolor='white', fc='None'))
+   # angstrom_Ly = (angstrom_redshifted/18010) * 13350
+    #ax1.text(21200, -26, rf"$\begin{{array}}{{c}} " \
+    #    rf"Z = {z} \\ R = {R} \\ \sigma_{{He_{{II1640}}}} = {angstrom_redshifted:.2f}\,\mathring{{A}} \\ \sigma_{{Ly-\alpha}} = {angstrom_Ly:.2f}\,\mathring{{A}}" \
+     #   rf"\end{{array}}$", bbox=dict(edgecolor='white', fc='None'))
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))
     flux = skyline_data["flux"]#*(10**-7)
     norm_flux = (flux) #*(10**(-10))
+    for i in range(len(skyline_data['wavelength'])):
+                   f = flux[i]
+                   w = skyline_data['wavelength'][i]
+                   ax3.vlines(w, 0, f, color='blue', alpha=0.6, linewidth=0.8)
     ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
-    ax3.plot((skyline_data["wavelength"]),norm_flux)
+    #ax3.plot((skyline_data["wavelength"]),norm_flux)
     #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
     ax4.set_ylim(0.25,1.1)
     ax4.set_ylabel("\(T (\%)\)", labelpad = 6)
@@ -471,8 +464,12 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     ax1.set_xlim(np.min(NIR),np.max(NIR))
     flux = skyline_data["flux"]#*(10**3)
     norm_flux = (flux) #*(10**(-10))
+    for i in range(len(skyline_data['wavelength'])):
+                   f = flux[i]
+                   w = skyline_data['wavelength'][i]
+                   ax3.vlines(w, 0, f, color='blue', alpha=0.6, linewidth=0.8)
     ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
-    ax3.plot((skyline_data["wavelength"]), norm_flux)
+    #ax3.plot((skyline_data["wavelength"]), norm_flux)
     #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
     ax4.set_ylim(0.25,1.05)
     ax4.set_ylabel("\(T (\%)\)")
