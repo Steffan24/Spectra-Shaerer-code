@@ -18,9 +18,33 @@ d_gauss = 100*pc
 
 save = False
 n = 'single'
-z = 11
+z = 11.5
 R = 7000
 
+cube_length = 0.3
+input_scale = 1*10**(-3)
+#fits_location =
+
+#### FITS HEADER PARAMETERS ###
+SIMPLE =' T / conforms to FITS standard'
+BITPIX = '-64'
+NAXIS =' 3'
+NAXIS1 = '300'
+NAXIS2 = '300'
+NAXIS3 = '8480'
+EXTEND = 'T'
+CTYPE1 = 'RA'
+CTYPE2 = 'DEC'
+CTYPE3 = 'wavelength'
+CUNIT1 = 'mas'
+CUNIT2 = 'mas'
+CUNIT3 = 'angstrom'
+CDELT1 = '1'
+CDELT2 = '1'
+CDELT3 = '0.093'
+CRPIX3 = '12562.5'
+BUNIT = 'erg/s/cm2/AA/arcsec2'
+SPECRES = '1.1625'
 
 
 

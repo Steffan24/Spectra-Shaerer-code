@@ -1,10 +1,10 @@
 # main.py
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker, Table
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker, Table, fits
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
-from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R
+from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R, cube_length, input_scale,SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRPIX3,BUNIT,SPECRES
 import plotting_params
-from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH
+from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH, create_data_cube
 
 SED_data = import_data(n, save, ttt, imf, mup, low, sfh, n_single, n_array)
 opacity_data = import_opacity()
@@ -14,7 +14,7 @@ lambda_sun, B, log_B = sun_type_star()
 
 lambda_blackbody, blackbody, log_blackbody = blackbody(T_100M)
 
-plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_blackbody)
+#plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_blackbody)
 
 SED_data = interpolate_SED(SED_data, n, z, R)
 
@@ -26,7 +26,7 @@ total_flux_lines = full_spectra(n, SED_data["wavelengths"], flux_H_beta, flux_H_
 
 flux_z, wavelength_z = redshifting(n,total_flux_lines, SED_data, z)
 
-plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z)
+#plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z)
 
 
 
@@ -34,5 +34,7 @@ flux_zab = AB_magnitude_conversion(flux_z, wavelength_z)
 
 LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K = import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max)
 
-plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R)
+#plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R)
+
+create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRPIX3,BUNIT,SPECRES)
 

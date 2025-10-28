@@ -1,7 +1,7 @@
 # functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -148,12 +148,12 @@ def blackbody(T):
 
 def interpolate_SED(SED_data, n, z, R):
     if n == 'single':
-        mask = (SED_data["wavelengths"] < 8000)
+        mask = (SED_data["wavelengths"] > 1000) & (SED_data['wavelengths'] < 1800)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
         resolution = 1500/R
         print(f"Resolution: {resolution}")
-        sampling = resolution/(5)
+        sampling = resolution/(2.3)
         print(f"Sampling pre redshift: {sampling}")
         x_new = np.arange(min(x), max(x), sampling)
         interpolated_wavelengths = interpolate.interp1d(x,y)
@@ -261,44 +261,7 @@ def gaussian_profile(M, R, wavelength, age_log, H_beta, H_lya, H_alpha, H_beta_,
     plt.plot(wavelength, np.log10(flux_HII_1640) - 30)
     plt.plot(wavelength, np.log10(flux_H_lya) - 30)
     plt.ylim(0,7)
-    plt.show()
-
-
-    sigma_gal = [30000, 150000, 300000]
-    data_ = Table()
-    for i in range(len(sigma_gal)):
-        sigma_line = (sigma_gal[i]/c_m) * np.array(lambda_peak_array)
-        print(f"SIGMA LINE: {sigma_line} Angstrom")
-        H_beta_peak_Intensity = (H_beta[0])#/(4*np.pi*(d**2))
-        HeII_1640_peak_intensity = (HeII_1640[0])#/(4*np.pi*(d**2))
-        print(f"H_1640_peak_Intensity: {HeII_1640_peak_intensity}")
-        flux_HII_1640 = []
-        for j in range(len(wavelength)):
-            exponential_5 = np.exp(((wavelength[j] - lambda_peak_array[4])**2)/(-2*(sigma_line[4])**2))
-            flux_H_1640_1 = ((HeII_1640_peak_intensity/(np.sqrt(2*np.pi)*sigma_line[4])) * exponential_5)
-            flux_HII_1640.append(flux_H_1640_1)
-        data_[f'sigma_{sigma_gal[i]}']= np.array(flux_HII_1640)
-    data_['wavelength'] = wavelength
-    ascii.write(data_, f'sigma_check_F_{HeII_1640_peak_intensity}.dat', format='basic', overwrite=True)
-    print("saved file")
-    data_ = Table.read('sigma_check.dat', format='ascii.basic')
-    plt.figure(figsize=(8,5))
-    plt.plot(wavelength, data_['sigma_30000'])
-    plt.plot(wavelength, data_['sigma_150000'])
-    plt.plot(wavelength, data_['sigma_300000'])
-    plt.xlabel('Wavelength [Å]', fontsize=12)
-    plt.ylabel('Flux [arbitrary units]', fontsize=12)
-    plt.title('Gaussian Line Profiles for Different Velocity Dispersions', fontsize=13)
-    plt.legend()
-    plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.show()
-    
-
-    
-
-
-    
+    plt.show()    
     return flux_H_beta, flux_H_lya, flux_H_alpha, flux_H_4471, flux_HII_1640, flux_HII_3203, flux_HII_4541, flux_HII_4686
 
 
@@ -327,23 +290,23 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z):
         fig, ax1 = plt.subplots()
         ax1.plot(np.log10(wavelength), np.log10(total_flux_lines) - 30, lw = 2)
         ax1.set_ylabel("logs")
-        ax1.set_xlim(2.5, 4.5)
-        ax1.set_ylim(2,9)
+        ax1.set_xlim(2.5, 4)
+        ax1.set_ylim(0,9)
         ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        ax1.set_ylabel("\(logF_{\lambda}\ 1e+10\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot M_{\odot}^{-1})\)")
         ax1.text(3.696,0.542 + 2.55, r'\(H\)$\beta$', bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(2.85,5.23 + 2.55,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.051,7.1,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.text(3.4,1 + 2.55,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.575,1.014 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.136,4.35 + 2.6,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.422,1.62,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.422,1.62), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.136,5.772,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
         #ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.3,5.792,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.466,4.275,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.488,-0.06 + 2.55,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.annotate("",xy=(3.657,1.37 + 2.55), xycoords='data', xytext=(3.5,-0.06 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
+        ax1.text(3.642,1.26,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.annotate("",xy=(3.657,2.20), xycoords='data', xytext=(3.642,1.26), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax2 = ax1.twiny()
         ax2.plot(np.log10(wavelength_z), total_flux_lines, alpha = 0)
         ax2.set_xlim(3.54, 5.54)
@@ -436,7 +399,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     def mag_to_flux(y):
         return magnitudes_to_flux_single((y), mean_lambda)
 
-    ax1.set_ylim(-29.5, -24)
+    ax1.set_ylim(-29.5, -23)
 
     ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
 
@@ -536,5 +499,50 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
                               transform=fig.transFigure, color='black', lw=1.5, linestyle = '--'))
 
     plt.show()
+
+
+
+def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRPIX3,BUNIT,SPECRES):
+    number_spaxels =int( cube_length / input_scale)
+    wavelength_points = len(wavelength_z)
+    print(f"wavelength points: {wavelength_points}")
+    print(f"number spaxels: {number_spaxels}")
+    print(f"minimum wavelength: {min(wavelength_z)}")
+    flux_z_sqrarcsec = flux_z / (input_scale**2)
+    cube = np.zeros((wavelength_points, number_spaxels, number_spaxels), dtype=np.float32)
+    central_spaxel = number_spaxels // 2
+    print(f"central spaxel: {central_spaxel}")
+    cube[:, central_spaxel, central_spaxel] = flux_z_sqrarcsec.astype(np.float32)
+    hdu = fits.PrimaryHDU(data=cube)
+    hdul = fits.HDUList([hdu])
+    hdul.writeto('test.fits', overwrite = True)
+    header = hdu.header
+    header["SIMPLE"] = SIMPLE
+    header["BITPIX"] = BITPIX
+    header["NAXIS"] = NAXIS
+    header["NAXIS1"] = NAXIS1
+    header["NAXIS2"] = NAXIS2
+    header["NAXIS3"] = NAXIS3
+    header["EXTEND"] = EXTEND
+    header["CTYPE1"] = CTYPE1
+    header["CTYPE2"] = CTYPE2
+    header["CTYPE3"] = CTYPE3
+    header["CUNIT1"] = CUNIT1
+    header["CUNIT2"] = CUNIT2
+    header["CUNIT3"] = CUNIT3
+    header["CDELT1"] = CDELT1
+    header["CDELT2"] = CDELT2
+    header["CDELT3"] = CDELT3
+    header["CRPIX3"] = CRPIX3
+    header["BUNIT"] = BUNIT
+    header["SPECRES"] = SPECRES
+    header.tofile("test.fits", overwrite = True)
+    #hdu.header()
+    
+    
+    
+    
+    
+    
     
 

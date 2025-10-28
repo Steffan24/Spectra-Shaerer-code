@@ -11,4 +11,5 @@ from astropy.cosmology import WMAP9 as cosmo
 from scipy import interpolate
 import matplotlib.ticker as mticker
 from astropy.table import Table
+from astropy.io import fits
 
