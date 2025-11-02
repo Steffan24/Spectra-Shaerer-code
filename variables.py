@@ -26,25 +26,26 @@ input_scale = 1*10**(-3)
 #fits_location =
 
 #### FITS HEADER PARAMETERS ###
-SIMPLE =' T / conforms to FITS standard'
-BITPIX = '-64'
-NAXIS =' 3'
-NAXIS1 = '300'
-NAXIS2 = '300'
-NAXIS3 = '8480'
-EXTEND = 'T'
+SIMPLE =' T'
+BITPIX = '-32'
+NAXIS = 3
+NAXIS1 = 300
+NAXIS2 = 300
+NAXIS3 = 4186
+EXTEND =' T'
 CTYPE1 = 'RA'
 CTYPE2 = 'DEC'
 CTYPE3 = 'wavelength'
 CUNIT1 = 'mas'
 CUNIT2 = 'mas'
 CUNIT3 = 'angstrom'
-CDELT1 = '1'
-CDELT2 = '1'
-CDELT3 = '0.093'
-CRPIX3 = '12562.5'
+CDELT1 = 1
+CDELT2 = 1
+CDELT3 = 1.209
+CRVAL3 = 17562.5
+CRPIX3 = 1
 BUNIT = 'erg/s/cm2/AA/arcsec2'
-SPECRES = '1.1625'
+SPECRES = 2.675
 
 
 

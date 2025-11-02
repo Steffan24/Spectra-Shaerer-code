@@ -148,7 +148,7 @@ def blackbody(T):
 
 def interpolate_SED(SED_data, n, z, R):
     if n == 'single':
-        mask = (SED_data["wavelengths"] > 1000) & (SED_data['wavelengths'] < 1800)
+        mask = (SED_data["wavelengths"] > 0) & (SED_data['wavelengths'] < 8000)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
         resolution = 1500/R
@@ -290,7 +290,7 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z):
         fig, ax1 = plt.subplots()
         ax1.plot(np.log10(wavelength), np.log10(total_flux_lines) - 30, lw = 2)
         ax1.set_ylabel("logs")
-        ax1.set_xlim(2.5, 4)
+        ax1.set_xlim(min(np.log10(wavelength)),max(np.log10(wavelength)))
         ax1.set_ylim(0,9)
         ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
         ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot M_{\odot}^{-1})\)")
@@ -298,18 +298,18 @@ def plot_full_spectra(n, total_flux_lines, SED_data, wavelength_z, z):
         ax1.annotate("",xy=(3.689,1.337 + 2.55), xycoords='data', xytext=(3.729,0.852 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(3.051,7.1,r'\(Ly-\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.text(3.856,2.795 + 2.55,r'\(H\)$\alpha$',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.text(3.422,1.62,'\(HII_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.422,1.62,'\(HeI_{4471}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.645,1.395 + 2.55), xycoords='data', xytext=(3.422,1.62), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax1.text(3.136,5.772,'\(HeII_{1640}\)',bbox=dict(edgecolor='black', fc = 'None'))
         #ax1.annotate("",xy=(3.210, 3.176 + 2.7), xycoords='data', xytext=(3.216,4.227 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.466,4.275,'\(HII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
-        ax1.text(3.58,3.38 + 2.55,'\(HII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.466,4.275,'\(HeII_{3203}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.58,3.38 + 2.55,'\(HeII_{4541}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.668,2.36 + 2.55), xycoords='data', xytext=(3.659,3.275 + 2.55), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.642,1.26,'\(HII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(3.642,1.26,'\(HeII_{4686}\)',bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(3.657,2.20), xycoords='data', xytext=(3.642,1.26), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
         ax2 = ax1.twiny()
-        ax2.plot(np.log10(wavelength_z), total_flux_lines, alpha = 0)
-        ax2.set_xlim(3.54, 5.54)
+        #ax2.plot(np.log10(wavelength_z*(1+z)), np.log10(total_flux_lines) - 30, c='green')
+        ax2.set_xlim(min(np.log10(wavelength*(1+z))), max(np.log10(wavelength*(1+z))))
         ax2.set_xlabel(
     rf"\textbf{{$\log \lambda\, (\mathrm{{\AA}})\ redshift\ z = {z}$}}"
 )
@@ -375,11 +375,12 @@ def import_harmoni_res(LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_I
     MR_K = np.linspace(MR_K_min, MR_K_max,3)* 10**4
     return LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K
 
-def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R):
+def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ, MR_J, MR_H, MR_K, opacity_data, skyline_data, z, R, total_flux_lines, SED_data, n):
     fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
     ax4.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)", labelpad = 12)
     ax1.plot((wavelength_z), np.log10(flux_z))
+
 
 
     def AB_magnitude_conversion_single(log_flux, wavelength_ref):
@@ -455,10 +456,22 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
 
 
+    wavelength_range = [10,11,12,13]
+    color = ['red', 'orange', 'yellow', 'green', 'cyan', 'lightblue', 'blue', 'turquoise']
+
+    
+
+    
+
     fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
     ax4.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A})\)")
-    ax1.plot((wavelength_z), np.log10((flux_z*(10**8))))
+    ax1.plot((wavelength_z), np.log10((flux_z*(10**8))), label = f"\(z = 11.5\)")
+    #for i in range(len(wavelength_range)):
+     #   flux_z, wavelength_z = redshifting(n, total_flux_lines, SED_data, wavelength_range[i])
+      #  print(wavelength_z, flux_z)
+       # ax1.plot(wavelength_z, np.log10(flux_z*(10**8)), color = color[i],linestyle = '--', label = f"$ z = {wavelength_range[i]}$")
+        
     
     ax1.set_ylim(-23, -19)
 
@@ -491,8 +504,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     
     y_solid = (pos1.y0 + pos3.y1) / 2
 
-    ax1.axhline(mag_to_flux(27.2), 0,1, c='red', ls = '--', label = '\(10mas\ limiting\ magnitude\)')
-    ax1.axhline(mag_to_flux(26.3), 0,1, c='orange', ls = '--', label = '\(4mas\ limiting\ magnitude\)')
+    #ax1.axhline(mag_to_flux(27.2), 0,1, c='red', ls = '--', label = '\(10mas\ limiting\ magnitude\)')
+    #ax1.axhline(mag_to_flux(26.3), 0,1, c='orange', ls = '--', label = '\(4mas\ limiting\ magnitude\)')
     ax1.legend()
 
     fig.add_artist(plt.Line2D([0.125, 0.9], [y_solid, y_solid],
@@ -502,7 +515,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
 
 
-def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRPIX3,BUNIT,SPECRES):
+def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES):
     number_spaxels =int( cube_length / input_scale)
     wavelength_points = len(wavelength_z)
     print(f"wavelength points: {wavelength_points}")
@@ -514,16 +527,16 @@ def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BIT
     print(f"central spaxel: {central_spaxel}")
     cube[:, central_spaxel, central_spaxel] = flux_z_sqrarcsec.astype(np.float32)
     hdu = fits.PrimaryHDU(data=cube)
-    hdul = fits.HDUList([hdu])
-    hdul.writeto('test.fits', overwrite = True)
+    
     header = hdu.header
-    header["SIMPLE"] = SIMPLE
-    header["BITPIX"] = BITPIX
+    header.clear()
+    header["SIMPLE"] = bool(SIMPLE)
+    header["BITPIX"] = bool(BITPIX)
     header["NAXIS"] = NAXIS
     header["NAXIS1"] = NAXIS1
     header["NAXIS2"] = NAXIS2
     header["NAXIS3"] = NAXIS3
-    header["EXTEND"] = EXTEND
+    header["EXTEND"] = bool(EXTEND)
     header["CTYPE1"] = CTYPE1
     header["CTYPE2"] = CTYPE2
     header["CTYPE3"] = CTYPE3
@@ -532,11 +545,13 @@ def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BIT
     header["CUNIT3"] = CUNIT3
     header["CDELT1"] = CDELT1
     header["CDELT2"] = CDELT2
+    header["CRVAL3"] = CRVAL3
     header["CDELT3"] = CDELT3
     header["CRPIX3"] = CRPIX3
     header["BUNIT"] = BUNIT
     header["SPECRES"] = SPECRES
-    header.tofile("test.fits", overwrite = True)
+    hdul = fits.HDUList([hdu])
+    hdul.writeto('test.fits', overwrite = True)
     #hdu.header()
     
     
