@@ -12,4 +12,5 @@ from scipy import interpolate
 import matplotlib.ticker as mticker
 from astropy.table import Table
 from astropy.io import fits
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 

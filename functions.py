@@ -1,7 +1,7 @@
 # functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -148,7 +148,7 @@ def blackbody(T):
 
 def interpolate_SED(SED_data, n, z, R):
     if n == 'single':
-        mask = (SED_data["wavelengths"] > 0) & (SED_data['wavelengths'] < 8000)
+        mask = (SED_data["wavelengths"] > 1000) & (SED_data['wavelengths'] < 1800)
         y = SED_data["SED_flux"][mask]
         x = SED_data["wavelengths"][mask]
         resolution = 1500/R
@@ -429,11 +429,12 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))
     flux = skyline_data["flux"]#*(10**-7)
-    norm_flux = (flux) #*(10**(-10))
+     #*(10**(-10))
     for i in range(len(skyline_data['wavelength'])):
                    f = flux[i]
                    w = skyline_data['wavelength'][i]
-                   ax3.vlines(w, 0, f, color='blue', alpha=0.6, linewidth=0.8)
+                   norm_f = f
+                   ax3.vlines(w, 0, norm_f, color='blue', alpha=0.6, linewidth=0.8)
     ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
     #ax3.plot((skyline_data["wavelength"]),norm_flux)
     #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
@@ -463,8 +464,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
     
 
-    fig, (ax1, ax3, ax4) = plt.subplots(3,1, height_ratios=[3,1,1], sharex = True)
-    ax4.set_xlabel("\(\lambda (\mathring{A})\)")
+    fig, (ax1, ax3) = plt.subplots(2,1, height_ratios=[3,1], sharex = True)
+    ax3.set_xlabel("\(\lambda (\mathring{A})\)")
     ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A})\)")
     ax1.plot((wavelength_z), np.log10((flux_z*(10**8))), label = f"\(z = 11.5\)")
     #for i in range(len(wavelength_range)):
@@ -484,16 +485,16 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     NIR = (np.array([0.8, 2.5])*(10**4))
     ax1.set_xlim(np.min(NIR),np.max(NIR))
     flux = skyline_data["flux"]#*(10**3)
-    norm_flux = (flux) #*(10**(-10))
+    norm_flux = (flux/np.max(flux))
     for i in range(len(skyline_data['wavelength'])):
-                   f = flux[i]
+                   f = norm_flux[i]
                    w = skyline_data['wavelength'][i]
                    ax3.vlines(w, 0, f, color='blue', alpha=0.6, linewidth=0.8)
-    ax4.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
+    ax3.plot((opacity_data["wavelength"]), opacity_data["transmittance"])
     #ax3.plot((skyline_data["wavelength"]), norm_flux)
     #ax5 = ax3.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
-    ax4.set_ylim(0.25,1.05)
-    ax4.set_ylabel("\(T (\%)\)")
+    ax3.set_ylim(0,1.1)
+    #ax3.set_ylabel("\(T (\%)\)")
     ax3.set_ylabel("\(f\)")
     pos1 = ax1.get_position()
     pos3 = ax3.get_position()
@@ -515,7 +516,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
 
 
-def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES):
+def create_data_cube(FILE,flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES):
+    flux_z = flux_z
     number_spaxels =int( cube_length / input_scale)
     wavelength_points = len(wavelength_z)
     print(f"wavelength points: {wavelength_points}")
@@ -551,8 +553,142 @@ def create_data_cube(flux_z, wavelength_z, cube_length, input_scale, SIMPLE, BIT
     header["BUNIT"] = BUNIT
     header["SPECRES"] = SPECRES
     hdul = fits.HDUList([hdu])
-    hdul.writeto('test.fits', overwrite = True)
+    hdul.writeto(f'{FILE}', overwrite = True)
     #hdu.header()
+
+
+def data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES):
+    constants = [10**8, 10**(7.5), 10**(7), 10**(6.5), 10**6, 10**(5.5)]
+    constants = np.array(constants)
+    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
+    plt.subplots_adjust(wspace=0.1)
+    axes = axes.flatten()
+    median_magnitudes = []
+    for i in range(len(constants)):
+        flux_z_new = flux_z * constants[i]
+        magnitude_z_new = AB_magnitude_conversion(flux_z_new, wavelength_z)
+        median_mag = np.median(magnitude_z_new)
+        median_mag = np.round(median_mag, 1)
+        median_magnitudes.append(median_mag)
+        print(f"median magnitude: {median_mag}")
+        axes[i].plot(wavelength_z, magnitude_z_new)
+        axes[i].set_ylim(32,15)
+        #axes[i].set_ylabel( "\(AB\ magnitude\)")
+        #plt.xlabel("\(\lambda (\mathring{A})\)")
+        axes[i].text(20000,18.5,f'\(M= {median_mag}\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+        print("Creating Data Cube")
+        FILE = f"V_{median_mag}.fits"
+        #create_data_cube(FILE,flux_z_new, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES)
+        print(f"Saved {FILE}")
+    fig.supylabel('\(AB\ magnitude\)', x=0.05, rotation=90)
+    plt.show()
+    print("Run completed")
+    return median_magnitudes
+        
+    
+    
+def collapse_cube(output_file):
+    fits_image_filename = output_file
+    hdul = fits.open(fits_image_filename)
+    data = hdul[0].data
+    header = hdul[0].header
+    spectrum = np.nansum(data, axis=(1,2))
+    crval3 = header.get("CRVAL3", 0)
+    cdelt3 = header.get("CDELT3", 1) 
+    crpix3 = header.get("CRPIX3", 1)
+    n_wave = data.shape[0]
+    wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+    wavelength_angstrom = wavelength*(10**4)
+    #h = const.h.cgs.value 
+    #c = const.c.cgs.value
+    #flux = spectrum * (h*c / (wavelength*(10**-8))) / ()
+    plt.figure()
+    plt.plot(wavelength_angstrom, (spectrum))
+    plt.ylabel("\(log\ counts\)")
+    plt.xlabel("\(wavelength\ (\mathring{A})\)")
+    plt.show()
+
+def collapse_all(output_array, median_magnitudes):
+    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
+    axes = axes.flatten()
+    for i in range(len(output_array)):
+        fits_image_filename = output_array[i]
+        hdul = fits.open(fits_image_filename)
+        data = hdul[0].data
+        header = hdul[0].header
+        spectrum = np.nansum(data, axis=(1,2))
+        crval3 = header.get("CRVAL3", 0)
+        cdelt3 = header.get("CDELT3", 1) 
+        crpix3 = header.get("CRPIX3", 1)
+        n_wave = data.shape[0]
+        wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+        wavelength_angstrom = wavelength*(10**4)
+        axes[i].plot(wavelength_angstrom,(spectrum*10**(-6)))
+        #axes[i].set_ylim(32,15)
+        axes[i].text(22000,2.1,fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    fig.supylabel('\(Counts (\cdot 10^{6})\)', x=0.05, rotation=90)
+    plt.show()
+    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
+    axes = axes.flatten()
+    for i in range(len(output_array)):
+        fits_image_filename = output_array[i]
+        hdul = fits.open(fits_image_filename)
+        data = hdul[0].data
+        header = hdul[0].header
+        spectrum = np.nansum(data, axis=(1,2))
+        crval3 = header.get("CRVAL3", 0)
+        cdelt3 = header.get("CDELT3", 1) 
+        crpix3 = header.get("CRPIX3", 1)
+        n_wave = data.shape[0]
+        wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+        wavelength_angstrom = wavelength*(10**4)
+        flux = (spectrum*(1.6*10**(-12)))/(np.pi*((3900/2)**2)*10000*wavelength_angstrom)
+        axes[i].plot(wavelength_angstrom,(flux*10**(21)))
+        axes[i].set_ylim(-0.05,0.2)
+        axes[i].text(22000,(0.15),fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+        axins = inset_axes(axes[i], width="35%", height="35%", box_to_anchor=(0.65, 0.55, 0.3, 0.4),  # (x0, y0, width, height)
+    bbox_transform=axes[i].transAxes)  # position + size
+        axins.plot(wavelength_angstrom, flux * 1e21)
+        zoom_center = 23225
+        zoom_halfwidth = 50 
+        axins.set_xlim(zoom_center - zoom_halfwidth, zoom_center + zoom_halfwidth)
+
+        # Auto-scale y-axis to that region
+        mask = (wavelength_angstrom > zoom_center - zoom_halfwidth) & (wavelength_angstrom < zoom_center + zoom_halfwidth)
+        if np.any(mask):
+            flux_region = flux[mask] * 1e21
+            axins.set_ylim(flux_region.min() - 0.02, flux_region.max() + 0.02)
+    fig.supylabel(
+    r'$Flux\ (\,\times 10^{-21}\ {\rm erg\ cm^{-2}\ s^{-1}\ \mathring{A}^{-1}}\,)$',
+    rotation=90,
+    x=0.05)
+    plt.show()
+    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
+    axes = axes.flatten()
+    for i in range(len(output_array)):
+        fits_image_filename = output_array[i]
+        hdul = fits.open(fits_image_filename)
+        data = hdul[0].data
+        header = hdul[0].header
+        spectrum = np.nansum(data, axis=(1,2))
+        crval3 = header.get("CRVAL3", 0)
+        cdelt3 = header.get("CDELT3", 1) 
+        crpix3 = header.get("CRPIX3", 1)
+        n_wave = data.shape[0]
+        wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+        wavelength_angstrom = wavelength*(10**4)
+        flux = (spectrum*(1.6*10**(-12)))/(np.pi*((3900/2)**2)*10000*wavelength_angstrom)
+        mag = AB_magnitude_conversion(flux, wavelength_angstrom)
+        axes[i].plot(wavelength_angstrom,(mag))
+        axes[i].set_ylim(40,28)
+        axes[i].text(22000,31,fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    fig.supylabel('\(Flux\)', x=0.05, rotation=90)
+    plt.show()
+
+    
+        
+    
+    
     
     
     
