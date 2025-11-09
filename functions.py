@@ -1,7 +1,7 @@
 # functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -569,6 +569,8 @@ def data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPI
         magnitude_z_new = AB_magnitude_conversion(flux_z_new, wavelength_z)
         median_mag = np.median(magnitude_z_new)
         median_mag = np.round(median_mag, 1)
+        mask = (wavelength_z > 17500)
+        mag_for_line = np.min(magnitude_z_new[mask])
         median_magnitudes.append(median_mag)
         print(f"median magnitude: {median_mag}")
         axes[i].plot(wavelength_z, magnitude_z_new)
@@ -576,6 +578,7 @@ def data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPI
         #axes[i].set_ylabel( "\(AB\ magnitude\)")
         #plt.xlabel("\(\lambda (\mathring{A})\)")
         axes[i].text(20000,18.5,f'\(M= {median_mag}\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+        axes[i].text(20000,20,f'\(V_He= {mag_for_line}\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
         print("Creating Data Cube")
         FILE = f"V_{median_mag}.fits"
         #create_data_cube(FILE,flux_z_new, wavelength_z, cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES)
@@ -588,10 +591,18 @@ def data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPI
     
     
 def collapse_cube(output_file):
+    def extract_central_region(data, size):
+        ny, nx = data.shape[1], data.shape[2]
+        cy, cx = ny // 2, nx // 2
+        half = size // 2
+        y1, y2 = cy - half, cy + half
+        x1, x2 = cx - half, cx + half
+        return data[:, y1:y2, x1:x2]
     fits_image_filename = output_file
     hdul = fits.open(fits_image_filename)
     data = hdul[0].data
     header = hdul[0].header
+    data = data_central = extract_central_region(data, 200)
     spectrum = np.nansum(data, axis=(1,2))
     crval3 = header.get("CRVAL3", 0)
     cdelt3 = header.get("CDELT3", 1) 
@@ -609,14 +620,27 @@ def collapse_cube(output_file):
     plt.show()
 
 def collapse_all(output_array, median_magnitudes):
+
+    def extract_central_region(data, region_size=200, subtract_background=True):
+        ny, nx = data.shape[1], data.shape[2]
+        cy, cx = ny // 2, nx // 2
+        half = region_size // 2
+
+        y1, y2 = cy - half, cy + half
+        x1, x2 = cx - half, cx + half
+
+        source_region = data[:, y1:y2, x1:x2]
+        return source_region
     fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
     axes = axes.flatten()
     for i in range(len(output_array)):
         fits_image_filename = output_array[i]
-        hdul = fits.open(fits_image_filename)
-        data = hdul[0].data
-        header = hdul[0].header
-        spectrum = np.nansum(data, axis=(1,2))
+        with fits.open(fits_image_filename) as hdul:
+            data = hdul[0].data
+            header = hdul[0].header
+
+        data_central= extract_central_region(data, 6, subtract_background=True)
+        spectrum = np.nansum(data_central, axis=(1, 2))
         crval3 = header.get("CRVAL3", 0)
         cdelt3 = header.get("CDELT3", 1) 
         crpix3 = header.get("CRPIX3", 1)
@@ -628,61 +652,103 @@ def collapse_all(output_array, median_magnitudes):
         axes[i].text(22000,2.1,fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
     fig.supylabel('\(Counts (\cdot 10^{6})\)', x=0.05, rotation=90)
     plt.show()
-    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
-    axes = axes.flatten()
-    for i in range(len(output_array)):
-        fits_image_filename = output_array[i]
-        hdul = fits.open(fits_image_filename)
-        data = hdul[0].data
-        header = hdul[0].header
-        spectrum = np.nansum(data, axis=(1,2))
+    
+    n_files = len(output_array)
+    fig, axes = plt.subplots(n_files, 4, figsize=(10, 3 * n_files),
+                             gridspec_kw={'width_ratios': [2, 1.5,1.2,1.2]})#, constrained_layout=True)
+    if n_files == 1:
+        axes = np.array([axes])  # ensure 2D array
+
+    for i, fits_image_filename in enumerate(output_array):
+        with fits.open(fits_image_filename) as hdul:
+            data = np.squeeze(hdul[0].data)
+            header = hdul[0].header
+
+        # make sure data has shape (nz, ny, nx)
+        if data.ndim == 2:
+            data = data[np.newaxis, :, :]
+
+        # --- SPECTRUM EXTRACTION ---
+        data_central = extract_central_region(data, 6)
+        spectrum = np.nansum(data_central, axis=(1, 2))
+
         crval3 = header.get("CRVAL3", 0)
-        cdelt3 = header.get("CDELT3", 1) 
+        cdelt3 = header.get("CDELT3", 1)
         crpix3 = header.get("CRPIX3", 1)
         n_wave = data.shape[0]
-        wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
-        wavelength_angstrom = wavelength*(10**4)
-        flux = (spectrum*(1.6*10**(-12)))/(np.pi*((3900/2)**2)*10000*wavelength_angstrom)
-        axes[i].plot(wavelength_angstrom,(flux*10**(21)))
-        axes[i].set_ylim(-0.05,0.2)
-        axes[i].text(22000,(0.15),fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-        axins = inset_axes(axes[i], width="35%", height="35%", box_to_anchor=(0.65, 0.55, 0.3, 0.4),  # (x0, y0, width, height)
-    bbox_transform=axes[i].transAxes)  # position + size
-        axins.plot(wavelength_angstrom, flux * 1e21)
+        wavelength = crval3 + cdelt3 * (np.arange(n_wave) - (crpix3 - 1))
+        wavelength_angstrom = wavelength * 1e4
+
+        flux = (spectrum * (1.6e-12)) / (np.pi * ((3900/2)**2) * 1e4 * wavelength_angstrom)
+
+        # --- COLLAPSED IMAGE ---
+        collapsed_image = np.nansum(data, axis=0)  # integrate over all wavelengths (x,y)
+        collapsed_image = np.nan_to_num(collapsed_image)
+
+        im_ax = axes[i, 1]
+        im = im_ax.imshow(collapsed_image, origin='lower', cmap='viridis',
+                          aspect='equal')  # <- equal keeps pixel aspect ratio
+        #im_ax.set_title(f"Collapsed Image {i+1}", fontsize=10)
+        im_ax.axis('off')
+
+        # optional colorbar
+        #cbar = fig.colorbar(im, ax=im_ax, fraction=0.046, pad=0.04)
+        #cbar.ax.tick_params(labelsize=8)
+
+        # --- SPECTRUM PLOT ---
+        sp_ax = axes[i, 0]
+        sp_ax.plot(wavelength_angstrom, spectrum*10**(-6))
+        #sp_ax.set_ylim(-0.05, 0.2)
+        #sp_ax.set_xlabel("Wavelength (Å)")
+        #sp_ax.set_ylabel("Flux × 10²¹")
+        #sp_ax.text(0.05, 0.9,
+         #          fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',
+          #         transform=sp_ax.transAxes,
+           #        bbox=dict(facecolor='white', alpha=0.5, edgecolor='none'))
+        if i == n_files - 1:
+            sp_ax.set_xlabel(r"$Wavelength\ (\mathrm{\AA})$")
+        else:
+            sp_ax.set_xticklabels([])
+        #sp_ax.set_ylabel(r"$Counts\ (\cdot 10^{6})$")
+
+        zoom = axes[i,2]
+        zoom.plot(wavelength_angstrom, spectrum*10**(-6))
         zoom_center = 23225
         zoom_halfwidth = 50 
-        axins.set_xlim(zoom_center - zoom_halfwidth, zoom_center + zoom_halfwidth)
-
-        # Auto-scale y-axis to that region
+        zoom.set_xlim(zoom_center - zoom_halfwidth, zoom_center + zoom_halfwidth)
         mask = (wavelength_angstrom > zoom_center - zoom_halfwidth) & (wavelength_angstrom < zoom_center + zoom_halfwidth)
         if np.any(mask):
-            flux_region = flux[mask] * 1e21
-            axins.set_ylim(flux_region.min() - 0.02, flux_region.max() + 0.02)
-    fig.supylabel(
-    r'$Flux\ (\,\times 10^{-21}\ {\rm erg\ cm^{-2}\ s^{-1}\ \mathring{A}^{-1}}\,)$',
-    rotation=90,
-    x=0.05)
-    plt.show()
-    fig, axes = plt.subplots(3, 2, height_ratios=[1,1,1], sharex=True, sharey = True)
-    axes = axes.flatten()
-    for i in range(len(output_array)):
-        fits_image_filename = output_array[i]
-        hdul = fits.open(fits_image_filename)
-        data = hdul[0].data
-        header = hdul[0].header
-        spectrum = np.nansum(data, axis=(1,2))
-        crval3 = header.get("CRVAL3", 0)
-        cdelt3 = header.get("CDELT3", 1) 
-        crpix3 = header.get("CRPIX3", 1)
-        n_wave = data.shape[0]
-        wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
-        wavelength_angstrom = wavelength*(10**4)
-        flux = (spectrum*(1.6*10**(-12)))/(np.pi*((3900/2)**2)*10000*wavelength_angstrom)
-        mag = AB_magnitude_conversion(flux, wavelength_angstrom)
-        axes[i].plot(wavelength_angstrom,(mag))
-        axes[i].set_ylim(40,28)
-        axes[i].text(22000,31,fr'$M_{{\mathrm{{theory}}}} = {median_magnitudes[i]:.1f}$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    fig.supylabel('\(Flux\)', x=0.05, rotation=90)
+            counts_region = spectrum[mask]*10**(-6)
+            diff = counts_region.max() - counts_region.min()
+            zoom.set_ylim(counts_region.min() - (diff/10), counts_region.max() + (diff/10))
+        #zoom.yaxis.tick_right()
+        #zoom.yaxis.set_label_position("right")
+        if i == n_files - 1:
+            zoom.set_xlabel(r"$Wavelength\ (\mathrm{\AA})$")
+        else:
+            zoom.set_xticklabels([])
+
+        collapsed_image = np.nansum(data[mask,:,:], axis=0)  # integrate over all wavelengths (x,y)
+        collapsed_image = np.nan_to_num(collapsed_image)
+
+        im2_ax = axes[i, 3]
+        im2 = im2_ax.imshow(collapsed_image, origin='lower', cmap='viridis',
+                          aspect='equal')  # <- equal keeps pixel aspect ratio
+        #im_ax.set_title(f"Collapsed Image {i+1}", fontsize=10)
+        im2_ax.axis('off')
+        im2_ax.text(1.05, 0.5, f"$M_{{input}} = {median_magnitudes[i]:.1f}$",
+                    transform=im2_ax.transAxes, ha='left', va='center', fontsize=30)
+        
+    fig.subplots_adjust(
+    left=0.1,   # space for y-label
+    right=0.9,  # space for images / colorbars
+    bottom=0.1, # space for shared x-label
+    top=0.95,   # top margin
+    wspace=0.3, # horizontal spacing between columns
+    hspace=0.25 # vertical spacing between rows
+    )
+    fig.text(0.03, 0.5, r"$\mathrm{Counts\ (\times10^{6})}$", 
+             ha='center', va='center', rotation='vertical', fontsize=30)
     plt.show()
 
     
