@@ -2,9 +2,9 @@
 
 from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker, Table, fits
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
-from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R, cube_length, input_scale,SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRVAL3, CRPIX3,BUNIT,SPECRES, output_file, output_array
+from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R, cube_length, input_scale,SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRVAL3, CRPIX3,BUNIT,SPECRES, output_file, output_array, output_SNR, output_flux, output_std, output_scale
 import plotting_params
-from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH, create_data_cube, data_cube_array, collapse_cube, collapse_all
+from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH, create_data_cube, data_cube_array, collapse_cube_data, collapse_all, extract_central_region, extracting_over_aperture, spatial_plots, spectral_analysis
 
 def setup():
     global T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
@@ -44,7 +44,14 @@ def setup():
     return median_magnitudes
 
 
-median_magnitudes = setup()
+#median_magnitudes = setup()
 
-#collapse_cube(output_file)
-collapse_all(output_array, median_magnitudes)
+wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std = collapse_cube_data(output_file, output_SNR, output_flux, output_std, output_scale)
+
+spectrum, spectrum_flux, spectrum_std = extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std)
+
+spatial_plots(spectrum, spectrum_flux,data_flux, spectrum_std, wavelength_angstrom)
+
+spectral_analysis(spectrum, spectrum_flux, spectrum_std, wavelength_angstrom, data, data_std)
+
+#collapse_all(output_array, median_magnitudes)

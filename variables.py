@@ -23,13 +23,27 @@ R = 7000
 
 cube_length = 0.3
 input_scale = 1*10**(-3)
-#fits_location =
-output_file = "/home/steff/hsim/HSIM/hsim/output_cubes/27_run/V_27.4_new_reduced.fits"
+output_scale = 7*10**(-3)
+
+#output file
+dir_basic = "/home/steff/hsim/HSIM/hsim/output_cubes/salpeter_10ks"
+output_mass = 6.0
+corresponding_V = 28.7
+
+
+output_file = f"{dir_basic}/M_{output_mass}_output/V_{corresponding_V}_new_reduced.fits"
+output_SNR = f"{dir_basic}/M_{output_mass}_output/V_{corresponding_V}_new_reduced_SNR.fits"
+output_flux =  f"{dir_basic}/M_{output_mass}_output/V_{corresponding_V}_new_reduced_flux_cal.fits"
+output_std = f"{dir_basic}/M_{output_mass}_output/V_{corresponding_V}_new_std.fits"
+
+
 output_array_init = "/home/steff/hsim/HSIM/hsim/output_cubes"
 output_2 = "/home/steff/hsim/zackrisson_pop3_all"
 output_array = [f"{output_array_init}/V_24_run3/V_24_reduced.fits",f"{output_array_init}/V25/V_24.9_new_reduced.fits",
                 f"{output_2}/code/V_26.2_new_reduced.fits",
                 f"{output_array_init}/27_run/V_27.4_new_reduced.fits", f"{output_array_init}/29_run/V_28.7_new_reduced.fits", f"{output_array_init}/30_run/V_29.9_new_reduced.fits" ]
+
+
 
 #### FITS HEADER PARAMETERS ###
 SIMPLE =' T'

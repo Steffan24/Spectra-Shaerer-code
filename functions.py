@@ -1,7 +1,7 @@
 # functions.py
 # list of functions used
 
-from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset,patches, curve_fit, GridSpec, axes3d
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
 
@@ -587,37 +587,357 @@ def data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPI
     plt.show()
     print("Run completed")
     return median_magnitudes
-        
+
+def extract_central_region(data, region_size, subtract_background=True):
+    ny, nx = data.shape[1], data.shape[2]
+    cy, cx = ny // 2, nx // 2
+    half = region_size // 2
+
+    y1, y2 = cy - half, cy + half
+    x1, x2 = cx - half, cx + half
+
+    source_region = data[:, y1:y2, x1:x2]
+    return source_region
     
     
-def collapse_cube(output_file):
-    def extract_central_region(data, size):
-        ny, nx = data.shape[1], data.shape[2]
-        cy, cx = ny // 2, nx // 2
-        half = size // 2
-        y1, y2 = cy - half, cy + half
-        x1, x2 = cx - half, cx + half
-        return data[:, y1:y2, x1:x2]
+def collapse_cube_data(output_file, output_SNR, output_flux, output_std, output_scale):
+    #COUNTS
     fits_image_filename = output_file
     hdul = fits.open(fits_image_filename)
     data = hdul[0].data
+    data_spectrum = np.nansum(data, axis=(1,2))
     header = hdul[0].header
-    data = data_central = extract_central_region(data, 200)
-    spectrum = np.nansum(data, axis=(1,2))
     crval3 = header.get("CRVAL3", 0)
     cdelt3 = header.get("CDELT3", 1) 
     crpix3 = header.get("CRPIX3", 1)
     n_wave = data.shape[0]
     wavelength = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
     wavelength_angstrom = wavelength*(10**4)
-    #h = const.h.cgs.value 
-    #c = const.c.cgs.value
-    #flux = spectrum * (h*c / (wavelength*(10**-8))) / ()
-    plt.figure()
-    plt.plot(wavelength_angstrom, (spectrum))
-    plt.ylabel("\(log\ counts\)")
-    plt.xlabel("\(wavelength\ (\mathring{A})\)")
+
+    #FLUX
+    fits_image_filename = output_flux
+    hdul_flux = fits.open(fits_image_filename)
+    data_flux = hdul_flux[0].data * (output_scale**2)
+    flux_data = np.nansum(data_flux, axis=(1,2))
+    header = hdul_flux[0].header
+    crval3 = header.get("CRVAL3", 0)
+    cdelt3 = header.get("CDELT3", 1) 
+    crpix3 = header.get("CRPIX3", 1)
+    n_wave = data_flux.shape[0]
+    wavelength_flux = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+    wavelength_angstrom_flux = wavelength_flux*(10**4)
+
+    #STD
+    fits_image_filename = output_std
+    hdul_std = fits.open(fits_image_filename)
+    data_std = hdul_std[0].data
+    std_data = np.sqrt(np.nansum(data_std**2, axis=(1,2)))
+    header = hdul_std[0].header
+    crval3 = header.get("CRVAL3", 0)
+    cdelt3 = header.get("CDELT3", 1) 
+    crpix3 = header.get("CRPIX3", 1)
+    n_wave = data_std.shape[0]
+     #* (output_scale**2)
+    wavelength_std = crval3 + cdelt3*(np.arange(n_wave) - crpix3)
+    wavelength_angstrom_std = wavelength_flux*(10**4)
+
+    return wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std
+
+                       
+def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std):
+    fig = plt.figure(figsize=(8, 6))
+    gs = GridSpec(2, 2, figure=fig, height_ratios=[1, 0.6])
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[1, :])
+
+    array = np.linspace(0,11,12, dtype = int)
+    SNR_totals = []
+    total_counts = []
+    std_totals = []
+    for i in range(len(array)):
+        central_std = extract_central_region(data_std, array[i]*2, True)
+        central_std = central_std
+        central_std_collapsed = np.sqrt(np.nansum(central_std**2, axis=(1,2)))
+        data_central = extract_central_region(data, array[i]*2, True)
+        data_central = data_central
+        data_central_collapsed = np.nansum(data_central, axis=(1,2))
+        SNR = np.sum(data_central_collapsed) / np.sqrt(np.sum(central_std_collapsed**2))
+        total_counts.append(np.sum(data_central_collapsed))
+        SNR_totals.append(SNR)
+        std_totals.append(np.sqrt(np.sum(central_std_collapsed**2)))
+
+
+    pixel_to_arcsec = 7*10**(-3)
+
+    arcsecs = (array * pixel_to_arcsec)
+    
+    ax1.plot(array, np.array(total_counts) * (10**-7))
+    ax1.set_ylabel("\(Counts (\cdot 10^7)\)")
+    ax1.set_xlabel("\(Aperture\ radius\ (Pixels)\)")
+    ax1.set_xlim(0,max(array))
+    ax4 = ax1.twiny()
+    ax4.set_xlim(0, max(arcsecs))
+    ax4.set_xlabel("\(Aperture\ radius\ (arcsec)\)")
+    
+    
+
+    SNR_totals = np.array(SNR_totals) 
+
+    ax2.plot(array, np.array(std_totals) * (10**(-4)))
+    ax2.set_ylabel("\(\sigma_{counts} (\cdot 10^4)\)")
+    ax2.set_xlabel("\(Aperture\ radius\ (Pixels)\)")
+    ax5 = ax2.twiny()
+    ax5.set_xlim(0, max(arcsecs))
+    ax5.set_xlabel("\(Aperture\ radius\ (arcsec)\)")
+    
+
+    ax3.plot(array, SNR_totals)
+    ax3.set_xlabel("\(Aperture\ radius\ (Pixels)\)")
+    ax3.set_ylabel("\(SNR\)")
+    ax6 = ax3.twiny()
+    ax6.set_xlim(0, max(arcsecs))
+    ax6.set_xlabel("\(Aperture\ radius\ (arcsec)\)")
+
+    plt.subplots_adjust(hspace=0.8, wspace=0.3)
     plt.show()
+
+    extraction_region = 6
+                       
+    #COUNTS
+    data_central= extract_central_region(data, extraction_region, subtract_background=True)
+    spectrum = np.nansum(data_central, axis=(1,2))
+
+    #FLUX
+    data_central_flux= extract_central_region(data_flux, extraction_region, subtract_background=True)
+    spectrum_flux = np.nansum(data_central_flux, axis=(1,2))
+
+    #STD
+    data_central_std= extract_central_region(data_std, extraction_region, subtract_background=True)
+    spectrum_std = np.sqrt(np.nansum(data_central_std**2, axis=(1,2)))
+
+    return spectrum, spectrum_flux, spectrum_std
+
+
+def spatial_plots(spectrum, spectrum_flux,data_flux, spectrum_std, wavelength_angstrom):
+    image_collapsed = np.nansum(data_flux, axis=0)
+    ny, nx = image_collapsed.shape
+    cy, cx = ny // 2, nx // 2
+
+    x_cut = image_collapsed[cy, :] * 10**(13)
+    y_cut = image_collapsed[:, cx] * 10**(13)
+
+    x_coords = np.arange(nx) - cx
+    y_coords = np.arange(ny) - cy
+
+    std_dev = np.std(x_cut)
+    def gaussian_fit(x_coords, stand):
+        gaussian = max(x_cut)*np.exp(-0.5*((x_coords - 0)**2)/stand**2)
+        return gaussian
+
+    x_values = np.linspace(-20,20,100)
+    popt, pcov = curve_fit(gaussian_fit, x_coords, x_cut)
+    print(popt)
+    
+    
+    lambda_he = 23210*10**(-10)
+    D = 39
+    FWHM = 1.2*(lambda_he/D)
+    print(f"FWHM: {FWHM}")
+    FWHM_pixels = FWHM*206265 / (7*10**(-3))
+    gaussian_seeing = np.max(x_cut)*np.exp(-0.5*((x_values)**2)/(FWHM_pixels/(2*np.sqrt(2*np.log(2))))**2)
+
+    pixel_to_arcsec = 7*10**(-3)
+
+    arcsecs = (x_values * pixel_to_arcsec)
+    
+        
+    fig, ax1 = plt.subplots()
+    ax1.plot(x_coords, x_cut, label='\(Observed\ flux\)')
+    ax1.plot(x_values, gaussian_fit(x_values, *popt), c='orange', label=f'\(Gaussian\ fit:\ FWHM\ =\)$ {popt[0]:.1f}$')
+    ax1.plot(x_values, gaussian_seeing, ls='--', c='green', label= '\(Diffraction\ limited\ PSF\)')
+    ax1.set_ylabel("\(Flux (\cdot 10^{-13}\ erg\cdot s^{-1}\ \cdot cm^{-2}\ \cdot \mathring{{A}}^{-1})\)")
+    ax1.set_xlim(np.min(x_values), np.max(x_values))
+    ax2 = ax1.twiny()
+    ax2.set_xlim(np.min(arcsecs), np.max(arcsecs))
+    ax2.set_xlabel("\(Angular\ separation\ along\ xaxis (arcsec)\)")
+    ax1.set_xlabel("\(Pixels\ from\ source\ along\ xaxis\)")
+    ax1.legend(loc='upper left')
+    plt.show()
+
+
+    ### 2D CONTOUR
+    X, Y = np.meshgrid(x_coords, y_coords)
+    plt.figure()
+    contour = plt.contourf(X, Y, image_collapsed * 1e13, levels=50, cmap='inferno')
+    plt.colorbar(contour, label='\(Intensity\)')
+    plt.show()
+
+    ### 3D CONTOUR ###
+
+    mask_x = (X[0, :] > -10) & (X[0, :] < 10)
+    mask_y = (Y[:, 0] > -10) & (Y[:, 0] < 10)
+
+    X_cut = X[np.ix_(mask_y, mask_x)]
+    Y_cut = Y[np.ix_(mask_y, mask_x)]
+    image_cut = image_collapsed[np.ix_(mask_y, mask_x)]
+
+    ax = plt.figure().add_subplot(projection='3d')
+    ax.plot_surface(X_cut, Y_cut , image_cut * 1e13, cmap='viridis')
+    ax.set_ylim(-10,10)
+    ax.set_xlim(-10,10)
+
+    x_min, x_max = -3, 3
+    y_min, y_max = -3, 3
+    z_min, z_max = 0, 2
+
+    y = np.linspace(y_min, y_max, 50)
+    z = np.linspace(z_min, z_max, 50)
+    Y, Z = np.meshgrid(y, z)
+
+    X_front = np.full_like(Y, x_max)
+    X_back  = np.full_like(Y, x_min)
+
+    ax.plot_surface(X_front, Y, Z, color='red', alpha=0.3, zorder=3)
+    ax.plot_surface(X_back,  Y, Z, color='red', alpha=0.3, zorder=3)
+
+    x = np.linspace(x_min, x_max, 50)
+    z = np.linspace(z_min, z_max, 50)
+    X, Z = np.meshgrid(x, z)
+
+    Y_left  = np.full_like(X, y_min)
+    Y_right = np.full_like(X, y_max)
+
+    ax.plot_surface(X, Y_left,  Z, color='red', alpha=0.3, zorder=3)
+    ax.plot_surface(X, Y_right, Z, color='red', alpha=0.3, zorder=3)
+
+    x = np.linspace(x_min, x_max, 50)
+    y = np.linspace(y_min, y_max, 50)
+    X, Y = np.meshgrid(x, y)
+
+    Z_top    = np.full_like(X, z_max)
+    Z_bottom = np.full_like(X, z_min)
+
+    ax.plot_surface(X, Y, Z_top,    color='red', alpha=0.3, zorder=3)
+    ax.plot_surface(X, Y, Z_bottom, color='red', alpha=0.3, zorder=3)
+
+    ax.set_ylabel("\(yaxis\ pixels\)", labelpad=15)
+    ax.set_xlabel("\(xaxis\ pixels\)", labelpad=15)
+    ax.set_zlabel("\(Flux\ (\cdot 10^{-13})\)", labelpad=15)
+    
+    
+    plt.show()
+
+    
+
+def spectral_analysis(spectrum, spectrum_flux, spectrum_std, wavelength_angstrom, data, data_std):
+
+    #EW Calculation
+    mask = (wavelength_angstrom > 23000) & (wavelength_angstrom < 23400)
+    wavelength_zoomed_flux = wavelength_angstrom[mask]
+    counts_zoomed = spectrum[mask]
+    std_zoomed = spectrum_std[mask]
+    plt.figure()
+    plt.plot(wavelength_zoomed_flux, counts_zoomed, label='\(Observed\ flux\)')
+    plt.xlabel("\(wavelength (\mathring{A})\)")
+    plt.ylabel("\(Flux (\cdot\ 10^{-10})\)")
+
+    mask_gauss =  (wavelength_zoomed_flux > 23190) & (wavelength_zoomed_flux < 23220)
+    wavelength_gauss = wavelength_zoomed_flux#[mask_gauss]
+    counts_gauss = counts_zoomed#[mask_gauss]
+    std_gauss = std_zoomed#[mask_gauss]
+    
+    def gaussian(x,A,B, std):
+        gaussian = (A/(np.sqrt(2*np.pi)*std))*np.exp(-0.5*((x-B)**2)/std**2)
+        return gaussian
+    popt, pcov = curve_fit(gaussian, wavelength_gauss, counts_gauss, p0 = [1.5*10**5,23205,15]) #sigma=std_gauss, absolute_sigma=True)
+    print(f"{popt[0]:.2f} exp(-0.5 ((x-{popt[1]:.2f})^2)/{popt[2]:.2f}")
+    FWHM_w = 2*np.sqrt(2*np.log(2))*popt[2]
+    plt.plot(wavelength_gauss, gaussian(wavelength_gauss,*popt),ls = '--', c='red', label=f'$Gaussian\ fit: FWHM = {FWHM_w:.2f}\mathring{{A}}$')
+    plt.legend(loc='upper right')
+    plt.show()
+
+    velocity_dispersion = c_m * (FWHM_w/2.355)/23204
+    print(f"volcity dispersion: {velocity_dispersion}m/s")
+    chi_squared_lin = ((counts_gauss - gaussian(wavelength_gauss, *popt))**2 / (std_gauss)**2)
+    chi_squared_line = np.sum(chi_squared_lin)
+    plt.figure()
+    plt.plot(wavelength_gauss,chi_squared_lin)
+    plt.show()
+    print(f"difference: {gaussian(wavelength_gauss, *popt) - counts_gauss}")
+    print(f"std: {std_gauss}")
+    print(f"chi squared gauss: {chi_squared_line}") 
+
+    def straight_fit(x, A):
+        y = A
+        return y
+    
+    mask_2 = ((wavelength_zoomed_flux > 23215))# & (wavelength_zoomed_flux < 23300))
+    mask_3 = ((wavelength_zoomed_flux < 23190))# & (wavelength_zoomed_flux > 23000))#17707))
+    wavelength_zoomed_1 = wavelength_zoomed_flux[mask_2]
+    wavelength_zoomed_2 = wavelength_zoomed_flux[mask_3]
+    zoomed_flux_1 = counts_zoomed[mask_2]
+    zoomed_flux_2 = counts_zoomed[mask_3]
+    std_zoom_1 = std_zoomed[mask_2]
+    std_zoom_2 = std_zoomed[mask_3]
+    wavelength_line_fit = np.concatenate([wavelength_zoomed_1, wavelength_zoomed_2])
+    flux_line_fit = np.concatenate([zoomed_flux_1, zoomed_flux_2])
+    std_line_fit = np.concatenate([std_zoom_1, std_zoom_2])
+    popt, pcov = curve_fit(straight_fit, wavelength_line_fit, flux_line_fit)
+    plt.figure()
+    plt.plot(wavelength_line_fit, flux_line_fit)
+    plt.hlines(straight_fit(wavelength_zoomed_flux, *popt), xmin=0, xmax=1)
+    plt.title("chi squared continuum range")
+    plt.show()
+    print(f"A: {popt[0]}")
+    straight_fit_array = straight_fit(wavelength_line_fit, *popt) * np.ones(len(flux_line_fit))
+    chi_squared_continuu = ((flux_line_fit - straight_fit_array)**2 / (std_line_fit)**2)
+    chi_squared_continuum = np.sum(chi_squared_continuu)
+    plt.figure()
+    plt.scatter(wavelength_line_fit,chi_squared_continuu)
+    plt.show()
+    print(f"diffence cont: {straight_fit_array - flux_line_fit}")
+    print(f"std cont: {std_line_fit}")
+    print(f"chi cont: {chi_squared_continuum}")
+    delta_chi = abs(chi_squared_continuum - chi_squared_line)
+    print(delta_chi)
+    SNR_He = np.sqrt(delta_chi)
+    print(f"SIGNAL TO NOISE: {SNR_He}")
+
+
+    #SUBPLOT 1:
+    extraction_region = 3
+    fig = plt.figure(figsize=(8, 6))
+    gs = GridSpec(2, 2, figure=fig, height_ratios=[1, 0.6])
+
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1])
+    ax3 = fig.add_subplot(gs[1, :])
+
+    wavelength_cut = wavelength_angstrom[mask]
+    signal_cut = extract_central_region(data, extraction_region, True)
+    signal_cut = np.nansum(signal_cut, axis=(1,2))[mask]
+    ax1.plot(wavelength_cut, signal_cut)
+    ax1.set_xlabel("\(Wavelength\ (\mathring{A})\)")
+    ax1.set_ylabel("\(Counts\)")
+    
+    noise_cut = extract_central_region(data_std, extraction_region, True)
+    noise_cut = np.sqrt(np.nansum(noise_cut**2, axis=(1,2)))[mask]
+    ax2.plot(wavelength_cut, noise_cut)
+    ax2.set_xlabel("\(Wavelength\ (\mathring{A})\)")
+    ax2.set_ylabel("\(\sigma_{counts}\)")
+
+    SNR_cut = signal_cut / noise_cut
+    ax3.plot(wavelength_cut, SNR_cut)
+    ax3.set_xlabel("\(Wavelength\ (\mathring{A})\)")
+    ax3.set_ylabel("\(SNR\)")
+    plt.subplots_adjust(hspace=0.4, wspace=0.3)
+    plt.show()
+
+     
+
+    
 
 def collapse_all(output_array, median_magnitudes):
 
@@ -686,9 +1006,25 @@ def collapse_all(output_array, median_magnitudes):
         collapsed_image = np.nan_to_num(collapsed_image)
 
         im_ax = axes[i, 1]
-        im = im_ax.imshow(collapsed_image, origin='lower', cmap='viridis',
+        im = im_ax.imshow(collapsed_image, origin='lower', cmap='gray',
                           aspect='equal')  # <- equal keeps pixel aspect ratio
         #im_ax.set_title(f"Collapsed Image {i+1}", fontsize=10)
+        ny, nx = collapsed_image.shape
+        cy, cx = ny // 2, nx // 2
+        half = 6 // 2   # <-- same region_size as in extract_central_region (6)
+        y1, y2 = cy - half, cy + half
+        x1, x2 = cx - half, cx + half
+
+        # --- Add red rectangle around that region ---
+        rect = patches.Rectangle(
+            (x1, y1),        # (x, y) of lower-left corner
+            x2 - x1,         # width
+            y2 - y1,         # height
+            linewidth=2,
+            edgecolor='red',
+            facecolor='none'
+        )
+        #im_ax.add_patch(rect)
         im_ax.axis('off')
 
         # optional colorbar
@@ -698,7 +1034,7 @@ def collapse_all(output_array, median_magnitudes):
         # --- SPECTRUM PLOT ---
         sp_ax = axes[i, 0]
         sp_ax.plot(wavelength_angstrom, spectrum*10**(-6))
-        #sp_ax.set_ylim(-0.05, 0.2)
+        sp_ax.set_ylim(-5*10**(-3), np.max(spectrum*10**(-6))/2)
         #sp_ax.set_xlabel("Wavelength (Å)")
         #sp_ax.set_ylabel("Flux × 10²¹")
         #sp_ax.text(0.05, 0.9,
@@ -713,7 +1049,7 @@ def collapse_all(output_array, median_magnitudes):
 
         zoom = axes[i,2]
         zoom.plot(wavelength_angstrom, spectrum*10**(-6))
-        zoom_center = 23225
+        zoom_center = 23207
         zoom_halfwidth = 50 
         zoom.set_xlim(zoom_center - zoom_halfwidth, zoom_center + zoom_halfwidth)
         mask = (wavelength_angstrom > zoom_center - zoom_halfwidth) & (wavelength_angstrom < zoom_center + zoom_halfwidth)
@@ -732,20 +1068,23 @@ def collapse_all(output_array, median_magnitudes):
         collapsed_image = np.nan_to_num(collapsed_image)
 
         im2_ax = axes[i, 3]
-        im2 = im2_ax.imshow(collapsed_image, origin='lower', cmap='viridis',
+        im2 = im2_ax.imshow(collapsed_image, origin='lower', cmap='gray',
                           aspect='equal')  # <- equal keeps pixel aspect ratio
         #im_ax.set_title(f"Collapsed Image {i+1}", fontsize=10)
+
+        constants = [8,7.5, 7, 6.5,6, 5.5]
+        constants = np.array(constants)
         im2_ax.axis('off')
-        im2_ax.text(1.05, 0.5, f"$M_{{input}} = {median_magnitudes[i]:.1f}$",
+        im2_ax.text(1.05, 0.5,f"$M_{{cluster}} = 10^{{{constants[i]:.2f}}} M_{{\\odot}}$",
                     transform=im2_ax.transAxes, ha='left', va='center', fontsize=30)
         
     fig.subplots_adjust(
-    left=0.1,   # space for y-label
-    right=0.9,  # space for images / colorbars
-    bottom=0.1, # space for shared x-label
-    top=0.95,   # top margin
-    wspace=0.3, # horizontal spacing between columns
-    hspace=0.25 # vertical spacing between rows
+    left=0.1, 
+    right=0.85, 
+    bottom=0.1,
+    top=0.95, 
+    wspace=0.25,
+    hspace=0.25
     )
     fig.text(0.03, 0.5, r"$\mathrm{Counts\ (\times10^{6})}$", 
              ha='center', va='center', rotation='vertical', fontsize=30)

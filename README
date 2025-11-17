@@ -1,6 +1,34 @@
 # Steffan Rhys Thomas October 2025 (L4)
 # Information regarding Python files and functions
 
+# main.py
+#	: Compiler code. Feel free to edit hash out and take charge of what you #	want the code to run.
+#	: 2 main functions: setup() takes the imported pop3 model from Schaerer #	2001 as defined in variables.py and generated input cubes for HSIM. More#	details regarding individual functions under functions.py
+#	    	 	   analysis() takes the imported output cube from HSIM ##	as defined in variables.py and runs a comprehensive analysis package	#	.As above more details in functions.py section
+
+
+# functions.py
+import_data((n, save, ttt, imf, mup, low, sfh, n_single, n_array): takes the pop	3 continuum models as defined in variables.py and generates a array pack	age titled SED_data consisting of stellar age, wavelength and flux. Swit	ching 'n' from 'single' to 'multi' allows you to carry out this analysis	 on multiple ages (importing the whole data table). Setting 'save' True		enables you to save the the SED_data as a np.array.
+
+import_opacity(): takes the atmospheric opacity in the NIR regime and outputs a 	array package titled "opacity_data" consisting of wavelength and transmi	ttance data. Transmittance is normalised between 1 and 0 - where 1 is fu	ll atmospheric transmittance.
+
+import_OH(): takes the OH skyline data and generates an output array called "sky	line_data" with wavelength and flux. Flux is in arbitrary (unknown) unit	s and therefore cannot be used in any quantative analysis techniques. Th	is is used to judge the location of the He line wrt skylines before runn	ing HSIM.
+
+plot(n, SED_data, lambda_sun, B, log_B, lambda_blackbody, blackbody, log_blackbo	dy): plots the SED data generated in import_data. Can either select a si	ngular age plot or plot the spectra over the stellar cluster lifetime.
+
+sun_type_star(): generates the estimated flux of a sun type star in the desired 	units to plot in plot (above)
+
+blackbody(T): again for use in plot. Generates the flux density of a blackbody o	f a temperature T.
+
+interpolate_SED(SED_data, n, z, R): calculates the ideal sampling rate and inter	polates the model fluxes in order to create a reasonable output array fo	r HSIM.
+
+import_lines(ttt, imf, mup, low, sfh): imports the absorption lines peak luminos	ity values from the Schaerer model
+
+
+
+	
+
+
 # File 1: import_spectum.py
 #      	  Imports: spectrum data from Schearer 2002 from a list of input parameters.
 #	  Outputs: wavelength, flux and age data

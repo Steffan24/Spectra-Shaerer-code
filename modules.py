@@ -13,4 +13,8 @@ import matplotlib.ticker as mticker
 from astropy.table import Table
 from astropy.io import fits
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
+import matplotlib.patches as patches
+from scipy.optimize import curve_fit
+from matplotlib.gridspec import GridSpec
+from mpl_toolkits.mplot3d import axes3d
 
