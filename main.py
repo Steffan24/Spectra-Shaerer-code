@@ -2,7 +2,7 @@
 
 from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, mticker, Table, fits
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
-from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R, cube_length, input_scale,SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRVAL3, CRPIX3,BUNIT,SPECRES, output_file, output_array, output_SNR, output_flux, output_std, output_scale
+from variables import ttt, imf, mup, low, sfh, n_single, n_array, M_gauss, d_gauss, save, n, LR_IZJ_min, LR_IZJ_max,LR_HK_min,LR_HK_max,MR_IZ_min,MR_IZ_max,MR_J_min,MR_J_max,MR_H_min,MR_H_max,MR_K_min,MR_K_max, z, R, cube_length, input_scale,SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CDELT3,CRVAL3, CRPIX3,BUNIT,SPECRES, output_file, output_array, output_SNR, output_flux, output_std, output_scale, output_counts_array, output_flux_array, output_std_array, mass_output_array, V_array, dir_basic, output_mass
 import plotting_params
 from functions import import_data, sun_type_star, blackbody, plot, import_lines, gaussian_profile, full_spectra, plot_full_spectra, redshifting, AB_magnitude_conversion, import_harmoni_res, plot_spectra_redshifted, interpolate_SED, import_opacity, import_OH, create_data_cube, data_cube_array, collapse_cube_data, collapse_all, extract_central_region, extracting_over_aperture, spatial_plots, spectral_analysis
 
@@ -43,15 +43,45 @@ def setup():
     median_magnitudes = data_cube_array(wavelength_z, flux_z,cube_length, input_scale, SIMPLE, BITPIX,NAXIS,NAXIS1,NAXIS2,NAXIS3,EXTEND,CTYPE1,CTYPE2,CTYPE3,CUNIT1,CUNIT2,CUNIT3,CDELT1,CDELT2,CRVAL3,CDELT3,CRPIX3,BUNIT,SPECRES)
     return median_magnitudes
 
+#print(output_counts_array)
 
-#median_magnitudes = setup()
 
-wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std = collapse_cube_data(output_file, output_SNR, output_flux, output_std, output_scale)
+def analysis(output_file, output_flux, output_std, output_scale):
+    wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std = collapse_cube_data(output_file, output_flux, output_std, output_scale)
+    spectrum, spectrum_flux, spectrum_std = extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std, dir_basic, output_mass)
+    # spatial_plots(spectrum, spectrum_flux,data_flux, spectrum_std, wavelength_angstrom)
+    # SNR_He, total_flux_gaussian = spectral_analysis(spectrum, spectrum_flux, spectrum_std, wavelength_angstrom, data, data_std)
+    # return SNR_He, total_flux_gaussian
 
-spectrum, spectrum_flux, spectrum_std = extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std)
 
-spatial_plots(spectrum, spectrum_flux,data_flux, spectrum_std, wavelength_angstrom)
+def full_analysis(output_counts_array, output_flux_array, output_std_array, mass_output_array, output_scale):
+    SNR_FULL = []
+    line_flux = []
+    for i in range(len(output_counts_array)):
+        SNR, flux = analysis(output_counts_array[i], output_flux_array[i], output_std_array[i], output_scale)
+        SNR_FULL.append(SNR)
+        line_flux.append(flux)
 
-spectral_analysis(spectrum, spectrum_flux, spectrum_std, wavelength_angstrom, data, data_std)
+    plt.figure()
+    plt.scatter((line_flux), SNR_FULL)
+    plt.ylabel("\(SNR\)")
+    plt.xlabel("\(line flux (erg\cdot s^{-1}\ \cdot cm^{-2}\ \cdot \mathring{{A}}^{-1})\)")
+    plt.show()
+    return SNR_FULL
 
-#collapse_all(output_array, median_magnitudes)
+
+#setup()
+
+analysis(output_file, output_flux, output_std, output_scale)
+
+# #SNR_He, total_flux_gaussian = analysis(output_file, output_flux, output_std, output_scale)
+
+# SNR_FULL = full_analysis(output_counts_array, output_flux_array, output_std_array, mass_output_array, output_scale)
+
+# collapse_all(output_counts_array, mass_output_array, output_std_array, V_array,SNR_FULL)
+
+# full_analysis(output_counts_array, output_flux_array, output_std_array, mass_output_array, output_scale)
+
+    
+
+

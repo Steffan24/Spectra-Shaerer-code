@@ -17,4 +17,6 @@ import matplotlib.patches as patches
 from scipy.optimize import curve_fit
 from matplotlib.gridspec import GridSpec
 from mpl_toolkits.mplot3d import axes3d
+from photutils.aperture import CircularAperture
+from photutils.aperture import aperture_photometry
 

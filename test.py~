@@ -1,0 +1,23 @@
+import numpy as np
+from scipy.optimize import curve_fit
+import matplotlib.pyplot as plt
+
+def gaussian(x,A):
+    std = 3.244
+    B = 23207.3
+    gaussian = (A/(np.sqrt(2*np.pi)*std))*np.exp(-0.5*((x-B)**2)/std**2)
+    return gaussian
+
+
+def calcSNR(xx, yy):
+    popt, pcov = curve_fit(gaussian, xx, yy, p0=[1])
+
+
+
+xx = np.linspace(23000, 23500, 3000)
+yy = np.random.normal(0, .1, 3000)
+yy += gaussian(xx, 1)
+
+
+plt.step(xx, yy)
+plt.show()
