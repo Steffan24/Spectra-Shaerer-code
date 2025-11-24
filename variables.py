@@ -50,7 +50,7 @@ SPECRES = 2.675
 ### OUTPUT CUBE PARAMETERS
 output_scale = 7*10**(-3)
 
-dir_basic = "/home/steff/hsim/HSIM/hsim/output_cubes/salpeter_10ks" #output directories
+dir_basic = "/home/steff/hsim/HSIM/hsim/output_cubes/salpeter" #output directories
 output_mass = 8.0
 corresponding_V = 23.7
 

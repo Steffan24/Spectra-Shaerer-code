@@ -40,20 +40,22 @@ def calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std):
 
     SNR = np.sqrt(np.abs(chi_squared_gaussian - chi_squared_cont_value))
     print(f"SNR_chi_method: {SNR}")
+    total_counts = popt[0]
 
-    plt.plot(wavelength_gauss, counts_gauss)
-    plt.show()
-    plt.figure()
-    plt.plot(wavelength_gauss, counts_gauss)
-    plt.plot(wavelength_gauss, straight_fit)
-    plt.show()
-    plt.figure()
-    plt.plot(wavelength_angstrom, spectrum)
-    plt.show()
-    plt.figure()
-    plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt), c = 'red')
-    plt.plot(wavelength_gauss, counts_gauss)
-    plt.show()
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.plot(wavelength_gauss, straight_fit)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_angstrom, spectrum)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt), c = 'red')
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.show()
+    return SNR, total_counts
 
 
 def calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std):
@@ -65,9 +67,27 @@ def calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std):
     A = popt[0]
     peak = A / (np.sqrt(2*np.pi)*3.24)
     std = np.nanstd(spectrum[wavelength_angstrom > 23300])
-    return peak / std*np.sqrt(2.355*(3.244/3.3))
+    SNR = peak / std*np.sqrt(2.355*(3.244/3.3))
+    total_counts = A
+    return SNR, total_counts
 
 print(f"SNR method 2: {calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std)}")
+
+def calc_line_flux(wavelength_angstrom, spectrum_flux, spectrum_std):
+    mask_gauss = (wavelength_angstrom > 23000) & (wavelength_angstrom < 23300)
+    wavelength_gauss = wavelength_angstrom[mask_gauss]
+    flux_gauss = spectrum_flux[mask_gauss]
+    std_gauss = np.array(spectrum_std[mask_gauss])
+    print(spectrum_std.shape)
+    popt, pcov, infodict, mesg, ier = curve_fit(gaussian, wavelength_gauss,flux_gauss,sigma = std_gauss,absolute_sigma = True, p0=[1], full_output = True)
+    line_flux = popt[0]
+    plt.figure()
+    plt.plot(wavelength_gauss, flux_gauss)
+    plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt))
+    plt.show()
+    
+    return line_flux
+    
     
 
 calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std)

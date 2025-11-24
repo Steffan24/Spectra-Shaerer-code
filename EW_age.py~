@@ -1,0 +1,2 @@
+from modules import np, plt
+from variables import n, save, ttt, imf, mup, low, sfh, n_single, n_array
