@@ -1,11 +1,11 @@
-from functions import collapse_cube_data, extracting_over_aperture
-from variables import output_file, output_flux, output_std, output_scale, dir_basic, output_mass
+#from functions import collapse_cube_data, extracting_over_aperture
+from variables import output_file, output_flux, output_std, output_scale, dir_basic, output_mass, output_exp_time
 from modules import np, plt, curve_fit
 
-spectrum = np.load(f"{dir_basic}/M_{output_mass}_output/spectrum_counts.npy")
-spectrum_flux = np.load(f"{dir_basic}/M_{output_mass}_output/spectrum_flux.npy")
-spectrum_std = np.load(f"{dir_basic}/M_{output_mass}_output/spectrum_std.npy")
-wavelength_angstrom = np.load(f"{dir_basic}/M_{output_mass}_output/wavelength_angstrom.npy")
+spectrum = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_counts.npy")
+spectrum_flux = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_flux.npy")
+spectrum_std = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_std.npy")
+wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/wavelength_angstrom.npy")
 
 def gaussian(x,A):
     std = 3.244
@@ -81,16 +81,18 @@ def calc_line_flux(wavelength_angstrom, spectrum_flux, spectrum_std):
     print(spectrum_std.shape)
     popt, pcov, infodict, mesg, ier = curve_fit(gaussian, wavelength_gauss,flux_gauss,sigma = std_gauss,absolute_sigma = True, p0=[1], full_output = True)
     line_flux = popt[0]
-    plt.figure()
-    plt.plot(wavelength_gauss, flux_gauss)
-    plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt))
-    plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_gauss, flux_gauss)
+    # plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt))
+    # plt.show()
     
     return line_flux
     
     
 
 calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std)
+
+
 
     
     

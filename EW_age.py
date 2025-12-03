@@ -1,13 +1,47 @@
-from modules import np, plt, Normalize
+from modules import np, plt, Normalize, ascii
 from variables import n, save, ttt, imf, mup, low, sfh, n_single, n_array
-from functions import import_lines, import_data
+from import_spectrum import import_data
 from constants import c_m
+import os
+import matplotlib.cm as cm
 
-age_log, H_beta, H_lya, H_alpha, H_beta_, HeI_4471, HeII_1640, HeII_4686, HeII_3203, HeII_4541 = import_lines(ttt,imf,mup,low,sfh)
+imf_array = ['sal', 'sca', 'logA', 'logB', 'logE', 'l05']
 
-HeII_1640_EW = HeII_1640 / H_beta
 
-SED_data = import_data(n,save,ttt,imf,mup,low,sfh,n_single,n_array)
+def import_EW(ttt,imf,mup,low,sfh):
+    file_loc = f"/home/steff/hsim/zackrisson_pop3_all/reionis_2010/pop3_{ttt}_{imf}_{mup}_{low}_{sfh}.22"
+    print(file_loc)
+    if os.path.exists(file_loc):
+        data = ascii.read(file_loc,guess = True, data_start = 0)
+        age_log = data['col1']
+        HeII_1640 = data['col14']
+        return age_log, HeII_1640
+    else:
+        return None
+    
+    
+
+def IMF_EW(imf_array):
+    colors = cm.rainbow(np.linspace(0, 1, len(imf_array)))
+    plt.figure()
+    for i in range(len(imf_array)):
+        result  = import_EW(ttt, imf_array[i], mup, low, sfh)
+        if result is None:
+            print(f"skipping IMF: {imf_array[i]}")
+            continue
+        age_log, HeII_1640 = result
+        plt.plot(age_log, HeII_1640,c = colors[i], label = f'\(IMF = {imf_array[i]}\)')
+    plt.ylabel('\(EW (\mathring{A})\)')
+    plt.xlabel('\(\log_{10}{t} (yr)\)')
+    plt.legend()
+    plt.show()
+        
+IMF_EW(imf_array) 
+    
+
+age_log, HeII_1640_EW = import_EW(ttt,imf,mup,low,sfh)
+
+SED_data = import_data(n,save)
 wavelength = SED_data["wavelengths"]
 
 
@@ -28,7 +62,7 @@ def line_fit(HeII_1640, wavelength, c_m, age_log):
             exp = np.exp(((wavelength[i] - lambda_peak)**2)/(-2*(sigma_line)**2))
             flux = (HeII_1640 / (np.sqrt(2*np.pi)*sigma_line))*exp
             flux_HeII_1640.append(flux)
-        plt.plot(wavelength, flux_HeII_1640, label = f"age = {age_log[j]}")
+        plt.scatter(wavelength, flux_HeII_1640, label = f"age = {age_log[j]}")
     plt.show()
 
 line_fit(HeII_1640, wavelength, c_m, age_log)

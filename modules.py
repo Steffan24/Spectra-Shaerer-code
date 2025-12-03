@@ -19,4 +19,5 @@ from matplotlib.gridspec import GridSpec
 from mpl_toolkits.mplot3d import axes3d
 from photutils.aperture import CircularAperture
 from photutils.aperture import aperture_photometry
+from matplotlib import cm
 

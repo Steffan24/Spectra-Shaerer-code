@@ -1,0 +1,247 @@
+from variables import output_file, output_flux, output_std, output_scale, dir_basic, output_mass, output_exp_time,  mass_output_array
+from modules import np, plt, curve_fit, cm
+import plotting_params
+
+spectrum = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_counts.npy")
+spectrum_flux = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_flux.npy")
+spectrum_std = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_std.npy")
+wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/wavelength_angstrom.npy")
+
+
+
+def gaussian(x,A):
+    std = 3.244
+    B = 20800
+    gaussian = (A/(np.sqrt(2*np.pi)*std))*np.exp(-0.5*((x-B)**2)/std**2)
+    return gaussian
+
+def chi_squared_gauss(x,y, std, popt):
+    chi = ((y - gaussian(x, *popt))**2)/(std**2)
+    return np.sum(chi)
+
+def chi_squared_cont(x,y,std, straight_fit):
+    chi = ((y - straight_fit)**2) / (std**2)
+    #print(chi)
+    return np.nansum(chi)
+
+def calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std):
+    mask_gauss = (wavelength_angstrom > 19500) & (wavelength_angstrom < 21000)
+    wavelength_gauss = wavelength_angstrom[mask_gauss]
+    counts_gauss = spectrum[mask_gauss]
+    std_gauss = np.array(spectrum_std[mask_gauss])
+    print(spectrum_std.shape)
+    popt, pcov, infodict, mesg, ier = curve_fit(gaussian, wavelength_gauss,counts_gauss,sigma = std_gauss,absolute_sigma = True, p0=[1*10**5], full_output = True)
+    #print(f"std gauss: {popt[1]}")
+    print(mesg)
+    print(ier)
+    chi_squared_gaussian = chi_squared_gauss(wavelength_gauss,counts_gauss, std_gauss, popt)
+    print(f"chi squared gauss: {chi_squared_gaussian}")
+
+    # mask_line = (wavelength_gauss > 20810) & (wavelength_gauss < 20790)
+    # wavelength_line = wavelength_gauss[mask_line]
+    # counts_line = counts_gauss[mask_line]
+    # std_line = std_gauss[mask_line]
+    straight_fit = np.ones(len(wavelength_gauss)) * np.nanmedian(np.array(counts_gauss))
+    #print(f"straight fit: {straight_fit}")
+    chi_squared_cont_value = chi_squared_cont(wavelength_gauss, counts_gauss, std_gauss, straight_fit)
+    print(f"chi squared cont: {chi_squared_cont_value}")
+
+    SNR = np.sqrt(np.abs(chi_squared_gaussian - chi_squared_cont_value))
+    print(f"SNR_chi_method: {SNR}")
+    total_counts = popt[0]
+    
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.plot(wavelength_gauss, straight_fit)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_angstrom, spectrum)
+    # plt.show()
+    # plt.figure()
+    # plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt), c = 'red')
+    # plt.plot(wavelength_gauss, counts_gauss)
+    # plt.show()
+    return SNR, total_counts
+
+
+def calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std):
+    mask_gauss =  (wavelength_angstrom > 19500) & (wavelength_angstrom < 21000)
+    wavelength_gauss = wavelength_angstrom[mask_gauss]
+    counts_gauss = spectrum[mask_gauss]
+    std_gauss = spectrum_std[mask_gauss]
+    popt, pcov = curve_fit(gaussian, wavelength_gauss,counts_gauss, p0=[1])
+    A = popt[0]
+    peak = A / (np.sqrt(2*np.pi)*3.24)
+    std = np.nanstd(spectrum[wavelength_angstrom > 23300])
+    SNR = peak / std*np.sqrt(2.355*(3.244/3.3))
+    total_counts = A
+    return SNR, total_counts
+
+print(f"SNR method 2: {calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std)}")
+
+def calc_line_flux(spectrum_flux, spectrum_std, wavelength_angstrom):
+    mask_gauss =  (wavelength_angstrom > 19500) & (wavelength_angstrom < 21000)
+    wavelength_gauss = wavelength_angstrom[mask_gauss]
+    flux_gauss = spectrum_flux[mask_gauss]
+    std_gauss = np.array(spectrum_std[mask_gauss])
+    print(spectrum_std.shape)
+    popt, pcov, infodict, mesg, ier = curve_fit(gaussian, wavelength_gauss,flux_gauss,sigma = std_gauss,absolute_sigma = True, p0=[1], full_output = True)
+    line_flux = popt[0]
+    # plt.figure()
+    # plt.plot(wavelength_gauss, flux_gauss)
+    # plt.plot(wavelength_gauss, gaussian(wavelength_gauss, *popt))
+    # plt.show()
+    
+    return line_flux
+
+
+def collapse_all(mass_output_array, output_exp_time):
+    n_files = len(mass_output_array)
+    fig, axes = plt.subplots(n_files, 2, figsize=(10, 3 * n_files),
+                             gridspec_kw={'width_ratios': [1.5, 1]})
+    #axes = axes.flatten()
+    for i in range(len(mass_output_array)):
+        data = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/data.npy")
+        spectrum = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/spectrum_counts.npy")
+        flux = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/spectrum_flux.npy")
+        spectrum_std = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/spectrum_std.npy")
+        data_std = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/data_std.npy")
+        data_flux = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/data_flux.npy")
+        wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{mass_output_array[i]}_output/wavelength_angstrom.npy")
+
+        # plt.figure()
+        # plt.plot(wavelength_angstrom, spectrum)
+        # plt.show()
+        
+        zoom_center = 20800
+        zoom_halfwidth = 50
+        mask = (wavelength_angstrom > zoom_center - zoom_halfwidth) & (wavelength_angstrom < zoom_center + zoom_halfwidth)
+        collapsed_image = np.nansum(data[mask,:,:],axis=0)
+        collapsed_image = np.nan_to_num(collapsed_image)
+        spectrum_cut = spectrum[mask]
+        wavelength_cut = wavelength_angstrom[mask]
+
+        zoom  = axes[i,0]
+        zoom.plot(wavelength_cut, spectrum_cut*10**(-6))
+        popt, pcov = curve_fit(gaussian, wavelength_cut,spectrum_cut, p0=[1])
+        zoom.plot(wavelength_cut, gaussian(wavelength_cut, *popt)*10**(-6), ls='--', c='red')
+        zoom.set_xlim(zoom_center - zoom_halfwidth, zoom_center + zoom_halfwidth)
+        #zoom.set_ylim(-0.01, 0.01)
+        im2_ax = axes[i,1]
+        ny, nx = collapsed_image.shape
+        pixel_scale_mas = 7
+        extent = [0, nx * pixel_scale_mas, 0, ny * pixel_scale_mas]
+        im2 = im2_ax.imshow(collapsed_image, origin='lower', cmap='gray',
+                            aspect='equal', extent=extent)
+        constants = [8.0,7.5, 7, 6.5,6.0, 5.5,5.0,4.5,4.0]
+        constants = np.array(constants)
+        if i == n_files - 1:
+            im2_ax.set_xlabel("\(X (mas)\)")
+        else:
+            zoom.set_xticklabels([])
+        im2_ax.axis('on')
+
+        flux_cut = flux[mask]
+        F_array = np.median(flux_cut)
+        wavelength_ref = np.median(wavelength_cut)
+        V_median = -2.5*np.log10(F_array) - 2.402 - 5.0*np.log10(wavelength_ref)
+        SNR_val, total_counts = calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std)
+        im2_ax.text(1.2, 0.5,fr"$M_{{cluster}} = 10^{{{constants[i]:.2f}}} M_{{\odot}}$"
+"\n"
+fr"$V_{{median}} = {V_median:.2f}$"
+                    "\n"
+                    fr"$SNR = {SNR_val:.2f}$",
+                    transform=im2_ax.transAxes, ha='left', va='center', fontsize=30)
+    fig.subplots_adjust(
+    left=0.1, 
+    right=0.85, 
+    bottom=0.1,
+    top=0.95, 
+    wspace=0.15,
+    hspace=0.35
+    )
+    fig.text(0.03, 0.5, r"$\mathrm{Counts\ (\times10^{6})}$", 
+             ha='center', va='center', rotation='vertical', fontsize=30)
+    plt.show()
+        
+        
+collapse_all(mass_output_array, output_exp_time)
+
+output_exp_time =[10]
+output_masses = [4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0]
+
+ax = plt.subplot(111)
+ax.set_yscale('log')
+colors = cm.rainbow(np.linspace(0, 1, len(output_exp_time)))
+for t in range(len(output_exp_time)):
+    line_flux_array = []
+    for i in range(len(output_masses)):
+        spectrum = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_counts.npy")
+        spectrum_flux = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_flux.npy")
+        spectrum_std = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_std.npy")
+        wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/wavelength_angstrom.npy")
+
+        SNR, total_counts = calcSNR_chi2(wavelength_angstrom, spectrum, spectrum_std)
+        line_flux = calc_line_flux(spectrum_flux, spectrum_std, wavelength_angstrom)
+        line_flux_array.append(line_flux)
+        
+    ax.scatter(output_masses, line_flux_array, color=colors[t], label = f'\(exposure\ time: {output_exp_time[t]} ks\)')
+
+plt.xlabel("\(Solar\ mass\ (M_{\odot})\)")
+plt.ylabel("\(Line\ flux\ (erg \cdot\ s^{-1}\cdot cm^{-2})\)")
+plt.legend()
+plt.show()
+
+output_exp_time = [10]
+plt.figure()
+colors = cm.rainbow(np.linspace(0, 1, len(output_exp_time)))
+for t in range(len(output_exp_time)):
+    flux_array = []
+    SNR_array = []
+    for i in range(len(output_masses)):
+        spectrum = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_counts.npy")
+        spectrum_flux = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_flux.npy")
+        spectrum_std = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_std.npy")
+        wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/wavelength_angstrom.npy")
+
+        SNR, total_counts = calcSNR_chi2(wavelength_angstrom, spectrum, spectrum_std)
+        line_flux = calc_line_flux(spectrum_flux, spectrum_std, wavelength_angstrom)
+        flux_array.append(line_flux)
+        SNR_array.append(SNR)
+    plt.scatter(flux_array, SNR_array,color = colors[t], label = f'\(exposure\ time: {output_exp_time[t]} ks\)')
+
+
+plt.ylabel("\(SNR\)")
+plt.xlabel("\(Line flux (erg \cdot\ s^{-1}\cdot cm^{-2})\)")
+plt.legend()
+plt.show()
+
+
+output_exp_time =[10]
+output_masses = [4.0,4.5,5.0,5.5,6.0,6.5,7.0,7.5,8.0]
+
+ax = plt.subplot(111)
+ax.set_yscale('log')
+colors = cm.rainbow(np.linspace(0, 1, len(output_exp_time)))
+for t in range(len(output_exp_time)):
+    line_flux_array = []
+    SNR_array = []
+    for i in range(len(output_masses)):
+        spectrum = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_counts.npy")
+        spectrum_flux = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_flux.npy")
+        spectrum_std = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/spectrum_std.npy")
+        wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time[t]}ks_exposures/M_{output_masses[i]}_output/wavelength_angstrom.npy")
+
+        SNR, total_counts = calcSNR_chi2(wavelength_angstrom, spectrum, spectrum_std)
+        line_flux = calc_line_flux(spectrum_flux, spectrum_std, wavelength_angstrom)
+        line_flux_array.append(line_flux)
+        SNR_array.append(SNR)
+        
+    ax.scatter(output_masses, SNR_array, color=colors[t], label = f'\(exposure\ time: {output_exp_time[t]} ks\)')
+
+plt.xlabel("\(Solar\ mass\ (M_{\odot})\)")
+plt.ylabel("\(SNR\)")
+plt.legend()
+plt.show()
