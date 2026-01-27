@@ -2,61 +2,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 import plotting_params
 
-M = np.linspace(0.25, 10**2, 1*10**5)
+import numpy as np
+import matplotlib.pyplot as plt
 
-#SALPETER IMF
-frac_sal = M**(-2.35)
+Mmin, Mmax = 0.5, 260.0
+M = np.logspace(np.log10(Mmin), np.log10(Mmax), 4000)
 
-#SCALO IMF
+# --- Shapes in dN/dlog10M space ---
+def lognormal_dndlog10M_shape(M, Mc, sigma):
+    return np.exp(-(np.log(M/Mc)**2) / (2.0*sigma**2))
 
-def scalo_imf(M):
-    xi = np.zeros_like(M)
-    xi[M < 1] = M[M < 1] ** -1.25
-    xi[(M >= 1) & (M < 10)] = M[(M >= 1) & (M < 10)] ** -2.35
-    xi[M >= 10] = M[M >= 10] ** -2.7
-    return xi
+def salpeter_dndlog10M_shape(M, alpha=2.35):
+    # dN/dM ∝ M^-alpha  ->  dN/dlog10M ∝ M^(1-alpha)
+    return M**(1.0 - alpha)  # = M^-1.35
 
-xi = scalo_imf(M)
+# --- Mass-normalize (same total mass formed) ---
+# For dN/dlog10M: Mtot = (1/ln10) ∫ phi(M) dM
+def mass_normalize(phi_dndlog10M, M, Mtot=1.0):
+    integral = np.trapz(phi_dndlog10M, M)
+    return phi_dndlog10M * (Mtot * np.log(10.0) / integral)
 
-## Tumlinson A
+phi_sal = mass_normalize(salpeter_dndlog10M_shape(M), M, Mtot=1.0)
+phi_A   = mass_normalize(lognormal_dndlog10M_shape(M, 10, 1.0), M, Mtot=1.0)
+phi_E   = mass_normalize(lognormal_dndlog10M_shape(M, 60, 1.0), M, Mtot=1.0)
 
-frac_A = []
-M_peak = 10
-for i in range(len(M)):
-    frac = (1/M[i]) * np.exp(-((np.log10(M[i]) -np.log10(M_peak))**2)/(2*(1**2)))
-    frac_A.append(frac)
+# --- GLOBAL SCALE to match Tumlinson y-axis placement ---
+# Choose: Salpeter at 1 Msun ~ 1e-2 (from the paper panel)
+target = 1e-2
+scale = target / np.interp(1.0, M, phi_sal)
 
-# TUMLINSON B
-frac_B = []
-M_peak = 3
-for i in range(len(M)):
-    frac = (1/M[i]) * np.exp(-((np.log10(M[i]) -np.log10(M_peak))**2)/(2*((0.5)**2)))
-    frac_B.append(frac)
-
-# TUMLINSON E
-frac_E = []
-M_peak = 100
-for i in range(len(M)):
-    frac = (1/M[i]) * np.exp(-((np.log10(M[i]) -np.log10(M_peak))**2)/(2*(1**2)))
-    frac_E.append(frac)
-
-# LARSON
-frac_larson = []
-M_peak = 5
-for i in range(len(M)):
-    frac = (M[i]**(-1.35))*np.exp(-M_peak/M[i])
-    frac_larson.append(frac)
+phi_sal *= scale
+phi_A   *= scale
+phi_E   *= scale
 
 plt.figure()
-plt.plot((M), (frac_sal), c='blue', label = '\(salpeter\)')
-plt.plot(M, xi, c='green', label = '\(scalo\)')
-plt.plot(M, frac_A, c='red', label='\(tumlinson\ A\)')
-plt.plot(M, frac_B, c='yellow', label = '\(tumlinson\ B\)')
-plt.plot(M, frac_E, c='cyan', label = '\(tumlinson\ E\)')
-plt.plot(M, frac_larson, c='orange', label = '\(larson\)')
-plt.xscale('log', base=10)
-plt.yscale('log', base=10)
-plt.xlabel("\(Stellar\ mass\ (M_{\odot})\)")
-plt.ylabel(r"$\frac{dN}{dM}$")
+plt.plot(M, phi_sal, 'k', label='Salpeter')
+plt.plot(M, phi_A,  'r', label='logA (10,1.0)')
+plt.plot(M, phi_E,  color='orange', label='logE (60,1.0)')
+
+plt.xscale('log'); plt.yscale('log')
+plt.xlim(Mmin, Mmax)
+plt.ylim(1e-5, 1e-1)
+plt.xlabel(r'$M\ (M_\odot)$')
+plt.ylabel(r'$dN/d\log_{10}M$')
 plt.legend()
+plt.savefig('/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/IMF_models.png')
 plt.show()

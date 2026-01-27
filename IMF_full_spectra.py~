@@ -1,0 +1,33 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import plotting_params
+
+dir = '/home/steff/hsim/HSIM/hsim/input_cubes/{model}/360ks_exposures'
+
+imf_models = ['salpeter', 'logA', 'logE']
+adjustment = [0,1000,2000]
+
+
+fig, ax = plt.subplots(figsize=(6, 5))
+#ax = ax[0]
+for i in range(len(imf_models)):
+    dir = f'/home/steff/hsim/HSIM/hsim/input_cubes/{imf_models[i]}/360ks_exposures'
+    wavelength = np.load(f'{dir}/M_6.0_wavelength.npy') + adjustment[i]
+    flux = np.load(f'{dir}/M_6.0_flux.npy')
+
+    ax.step(wavelength, flux, label = f'{imf_models[i]}')
+
+ax.set_xlabel('$Wavelength (\mathring{A})$')
+#ax.set_yscale('log')
+ax.set_xscale('log')
+ax.set_xlim(1.4*10**4, 2.4*10**4)
+ax.set_ylabel('$Flux (erg \cdot s^{-1} \cdot cm^{-2} \cdot \mathring{A})$')
+ax.legend(loc = 'upper center',ncols = 3,  bbox_to_anchor =(0.5, 1.19),frameon = False,
+    borderpad=0.2,
+    labelspacing=0.3,
+    handletextpad=0.4
+)
+plt.savefig('/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/input_IMF_spectra_adjusted.png')
+plt.show()
+
+    

@@ -2,7 +2,7 @@
 from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset,patches, curve_fit, GridSpec, axes3d, CircularAperture,aperture_photometry
 from constants import T_sun, c_m, T_100M, M_sun_kg, G, kb, c, h, pc, AU, d, R_sun, M_sun
 import plotting_params
-from variables import output_file, dir_basic, output_mass, corresponding_V, output_exp_time, output_flux, output_std, output_scale
+from variables import output_file, dir_basic, output_mass, corresponding_V, output_exp_time, output_flux, output_std, output_scale, input_file, input_scale
 
 
 def extract_central_region(data, region_size, data_std, subtract_background=True):
@@ -28,6 +28,8 @@ def extract_central_region(data, region_size, data_std, subtract_background=True
 
     print(counts)
     return counts, error
+
+   
     
     
 def collapse_cube_data(output_file, output_flux, output_std, output_scale):
@@ -75,7 +77,7 @@ def collapse_cube_data(output_file, output_flux, output_std, output_scale):
 
                        
 def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std, dir_basic, output_mass, output_exp_time):
-    fig = plt.figure()#, (ax1,ax3) = plt.subplots(2,1, height_ratios = [2,1])
+    fig = plt.figure(111)#, (ax1,ax3) = plt.subplots(2,1, height_ratios = [2,1])
     gs = GridSpec(2, 2, figure=fig, height_ratios=[1, 0.6])
 
     ax1 = fig.add_subplot(gs[0, 0])
@@ -124,7 +126,7 @@ def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength
     ax2.set_xlabel("\(Aperture\ radius\ (Pixels)\)")
     ax2.set_xlim(1, max(array))
     ax2.vlines(x=3,ymin=0, ymax = np.max(std_totals)*10**(-4) , color = 'red', ls = '--')
-    ax3.vlines(x=3,ymin=np.min(SNR_totals), ymax = np.max(SNR_totals) , color = 'red', ls = '--', label = '\(selected\ aperture\ radius\)')
+    ax3.vlines(x=3,ymin=np.min(SNR_totals), ymax = np.max(SNR_totals) , color = 'red', ls = '--', label = '\(R_{aperture} = 3\ pixels\)')
     ax3.legend()
     ax5 = ax2.twiny()
     ax5.set_xlim(min(arcsecs)*100, max(arcsecs)*100)
@@ -139,7 +141,7 @@ def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength
     ax6.set_xlim(min(arcsecs)*100, max(arcsecs)*100)
     ax6.set_xlabel("\(Aperture\ radius\ \cdot\ 10^{{-2}}\ (arcsec)\)")
 
-    plt.subplots_adjust(hspace=0.8, wspace=0.3)
+    plt.subplots_adjust(hspace=1, wspace=0.6)
     plt.show()
 
     
@@ -176,3 +178,6 @@ def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength
 wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std = collapse_cube_data(output_file, output_flux, output_std, output_scale)
 
 spectrum, spectrum_flux, spectrum_std = extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength_angstrom_flux,flux_data,data_flux, wavelength_angstrom_std, std_data, data_std, dir_basic, output_mass, output_exp_time)
+
+#collapse_input_cube(input_file, input_scale)
+

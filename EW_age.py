@@ -4,6 +4,7 @@ from import_spectrum import import_data
 from constants import c_m
 import os
 import matplotlib.cm as cm
+import plotting_params
 
 imf_array = ['sal', 'sca', 'logA', 'logB', 'logE', 'l05']
 
@@ -23,17 +24,22 @@ def import_EW(ttt,imf,mup,low,sfh):
 
 def IMF_EW(imf_array):
     colors = cm.rainbow(np.linspace(0, 1, len(imf_array)))
-    plt.figure()
+    fig, ax = plt.subplots(111)
     for i in range(len(imf_array)):
         result  = import_EW(ttt, imf_array[i], mup, low, sfh)
         if result is None:
             print(f"skipping IMF: {imf_array[i]}")
             continue
         age_log, HeII_1640 = result
-        plt.plot(age_log, HeII_1640,c = colors[i], label = f'\(IMF = {imf_array[i]}\)')
-    plt.ylabel('\(EW (\mathring{A})\)')
-    plt.xlabel('\(\log_{10}{t} (yr)\)')
-    plt.legend()
+        ax.plot(age_log, HeII_1640,c = colors[i], label = f'\(IMF = {imf_array[i]}\)')
+    ax.set_ylabel('\(EW (\mathring{A})\)')
+    #ax.set_yscale('log', base=10)
+    ax.set_xlabel('\(\log_{10}{t} (yr)\)')
+    ax.legend(loc = 'upper center',ncols = 3,  bbox_to_anchor =(0.5, 1.19),frameon = False,
+              borderpad=0.2,
+              labelspacing=0.3,
+              handletextpad=0.4)
+    plt.savefig("/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/EW_IMF.png")
     plt.show()
         
 IMF_EW(imf_array) 
@@ -49,6 +55,7 @@ plt.figure()
 plt.plot(age_log, HeII_1640_EW)
 plt.ylabel(f"\(EW\)")
 plt.xlabel("\(\log_{10}{t} (yr)\)")
+
 plt.show()
 
 def line_fit(HeII_1640, wavelength, c_m, age_log):

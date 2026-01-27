@@ -82,8 +82,28 @@ def full_analysis(output_counts_array, output_flux_array, output_std_array, mass
     plt.show()
     return SNR_FULL
 
+def all_imf(imf_list):
+    fig, ax = plt.subplots()
+    colors = ['red', 'green', 'blue']
+    for i in range(len(imf_list)):
+        SED_data = import_data(n, save, ttt, imf_list[i], mup, low, sfh, n_single, n_array)
+        SED_data = interpolate_SED(SED_data, n, z, R)
+        wavelength = SED_data["wavelengths"]
+        flux = SED_data["SED_flux"]
+        print(f"flux: {flux}")
+        ax.plot(wavelength, flux, c = colors[i], label = f"IMF: {imf_list[i]}")
+    ax.set_xlabel("$Wavelength (\mathring{A})$")
+    ax.set_ylabel("$Flux \cdot 10^{33} (erg \cdot s^{-1} \cdot cm^{-2} \cdot \mathring{A}^{-1})$")
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+    ax.legend()
+    plt.savefig('/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/imf_plots.png')
+    plt.show()
+        
+imf_list = ['sal','logA', 'logE']       
+all_imf(imf_list)
 
-setup(True,True)
+setup(True,False)
 
 #analysis(output_file, output_flux, output_std, output_scale, output_exp_time)
 
