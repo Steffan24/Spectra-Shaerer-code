@@ -1,0 +1,40 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import plotting_params
+
+high_mass = ['5_5', '6', '6_5']
+run = [3,6,8]
+HeII_array = []
+NIV_array = []
+CIV_array = []
+OIII_array = []
+NIII_array = []
+Ly_a_array = []
+
+for i in range(len(run)):
+    array = np.load(f"/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/salpeter_run/salpeter_run/run_{run[i]}/SNR_values.npy")
+    He_II = array[3]
+    NIV = array[1]
+    CIV = array[2]
+    OIII = array[4]
+    NIII = array[5]
+    Ly_a = array[0]
+    HeII_array.append(He_II)
+    NIV_array.append(NIV)
+    CIV_array.append(CIV)
+    OIII_array.append(OIII)
+    NIII_array.append(NIII)
+    Ly_a_array.append(Ly_a)
+    
+
+plt.figure()
+plt.scatter(high_mass, HeII_array, label = 'He_II')
+plt.plot(high_mass, HeII_array, c='blue')
+plt.scatter(high_mass, NIV_array, label = 'NIV')
+plt.scatter(high_mass, CIV_array, label = 'CIV')
+plt.scatter(high_mass, OIII_array, label = 'OIII')
+plt.scatter(high_mass, NIII_array, label = 'NIII')
+plt.legend()
+plt.xlabel("$Cluster mass (M_{\odot})$")
+plt.ylabel("$SNR$")
+plt.show()

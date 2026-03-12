@@ -104,8 +104,8 @@ wl_all = np.concatenate(wavelength_data)
 fl_all = np.concatenate(flux_data)
 
 plt.figure()
-plt.plot(x_new, spectra_flux)
-plt.step(wl_all, fl_all)
+plt.plot(x_new, spectra_flux, zorder = 2)
+plt.step(wl_all, fl_all, zorder = 1)
 plt.xlabel('$Wavelength\ (\mathring{A})$')
 plt.ylabel('$Flux\ (erg \cdot cm^{-2} \cdot s^{-1} \cdot \mathring{A}^{-1})$')
 plt.xlim(10000, 30000)
@@ -119,6 +119,22 @@ print('Should have saved wavelength in GNz11 dir')
 np.save('/home/steff/hsim/GNz11/model_spectra/flux.npy', spectra_flux)
 print('Should have saved flux in GNz11 dir')
 
+###  SNR of lines
+
+
+line_wavelength = spectral_lines_file['l0']
+
+for i in range(len(line_wavelength)):
+    mask_wavelength = (x_new > line_wavelength[i] - 100) & (x_new < line_wavelength[i] + 100)
+    narrow_band = x_new[mask_wavelength]
+    narrow_flux = spectra_flux[mask_wavelength]
+    max_flux = max(narrow_flux)
+    continuum = (2.998*10**21)* (10**(-0.4*(26+48.60)))/(1000*(line_wavelength[i])**2)
+    SNR = max_flux / continuum
+    print(f"SNR of {line_name[i]}: {SNR}")
+
+    
+    
 
 
 

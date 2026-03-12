@@ -1,0 +1,6 @@
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset,patches, curve_fit, GridSpec, axes3d, CircularAperture,aperture_photometry
+
+import plotting_params
+
+output_file = #file to collapse
+

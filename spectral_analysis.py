@@ -7,12 +7,12 @@ from matplotlib.ticker import MaxNLocator
 import matplotlib as mpl
 
 output_exp_time = 360
-output_mass = 4.5
+output_mass = 6.0
 
-spectrum = np.load(f"{dir_basic_logE}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_counts.npy")
-spectrum_flux = np.load(f"{dir_basic_logE}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_flux.npy")
-spectrum_std = np.load(f"{dir_basic_logE}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_std.npy")
-wavelength_angstrom = np.load(f"{dir_basic_logE}/{output_exp_time}ks_exposures/M_{output_mass}_output/wavelength_angstrom.npy")
+spectrum = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_counts.npy")
+spectrum_flux = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_flux.npy")
+spectrum_std = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/spectrum_std.npy")
+wavelength_angstrom = np.load(f"{dir_basic}/{output_exp_time}ks_exposures/M_{output_mass}_output/wavelength_angstrom.npy")
 
 def ks_to_seconds(t_ks):
     return t_ks * 1000.0
@@ -97,7 +97,7 @@ def calcSNR_chi2(wavelength_angstrom,spectrum, spectrum_std):
 
 
 def calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std):
-    mask_gauss =  (wavelength_angstrom > 20797) & (wavelength_angstrom < 20803)
+    mask_gauss =  (wavelength_angstrom > 19000) & (wavelength_angstrom < 22000)
     pixel_sizes = np.diff(wavelength_angstrom)
     print("Median pixel scale:", np.median(pixel_sizes))
     print("Unique values:", np.unique(np.round(pixel_sizes, 3)))
@@ -107,19 +107,28 @@ def calcSNR_peak(wavelength_angstrom, spectrum, spectrum_std):
     # plt.figure()
     # plt.step(wavelength_gauss, counts_gauss)
     # plt.show()
-    # popt, pcov, infodict, mesg, ier = curve_fit(gaussian, wavelength_gauss,counts_gauss,sigma = std_gauss,absolute_sigma = True, p0=[1*10**5], full_output = True)
-    # A = popt[0]
-    # peak = A / (np.sqrt(2*np.pi)*(3.244))
+    center = 20800
+    sigma_guess = 3.244
+    p0 = [np.nanmax(counts_gauss) - np.nanmedian(counts_gauss), center, sigma_guess]  # [amp, mu, sigma]
+    bounds = ([0, center-1.5, 3], [np.inf, center+1.5, 4])
+    popt, pcov, infodict, mesg, ier = curve_fit(gaussian_line, wavelength_gauss,counts_gauss,sigma = std_gauss,absolute_sigma = True, p0=p0, bounds=bounds, full_output = True)
+    A = popt[0]
+    peak = A / (np.sqrt(2*np.pi)*(popt[2]))
     # mask_cont = (wavelength_angstrom > 18000) & (wavelength_angstrom < 23000)
     # spectrum_cont = spectrum[mask_cont]
     # wavelength_cont = wavelength_angstrom[mask_cont]
     # std = np.nanstd(spectrum_cont[(wavelength_cont < 19500) | (wavelength_cont > 21000)])
     # SNR = peak / std*np.sqrt(2.355*(3.244/2.642))
     # total_counts = A
-
-    sum_counts = np.nansum(counts_gauss)
-    sum_std = np.sqrt(np.nansum(std_gauss**2))
-    SNR = sum_counts/sum_std
+    mask_cont = (wavelength_gauss > 20804) | (wavelength_gauss < 20796)
+    counts_cont = counts_gauss[mask_cont]
+    median_cont = np.nanmedian(counts_cont)
+    residuals = counts_cont - median_cont
+    std_cont = np.std(counts_cont)#residuals)
+    
+    # sum_counts = np.nansum(counts_gauss)
+    # sum_std = np.sqrt(np.nansum(std_gauss**2))
+    SNR =  peak/std_cont
     print(f"chi squared method 2: {SNR}")
     return SNR
 
@@ -550,7 +559,7 @@ for t in range(len(output_exp_time)):
         line_flux_array_err.append(flux_err)
         SNR_array.append(SNR)
         SNR_2_array.append(SNR_2)
-        delta_SNR = ((SNR_2 - SNR)/SNR) * 100
+        delta_SNR = SNR - SNR_2
         symmetric_perc[t].append(delta_SNR)
         
     print(f"Methods differ by {symmetric_perc}%")
@@ -590,6 +599,17 @@ plt.legend(loc = 'upper center',ncols = 3,  bbox_to_anchor =(0.5, 1.19),frameon 
 # plt.legend(handles=[no1,no2], loc = 'lower right')
 plt.xlim(8*10**(3), 10**(8))
 #plt.savefig("/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/SNR_mass_sal.png")
+plt.show()
+
+model = SNR_array
+
+plt.figure()
+plt.plot(SNR_array, SNR_2_array)
+plt.plot(SNR_array, SNR_array, ls='--', c='red')
+plt.xlabel("$SNR_{\chi^2}$")
+plt.ylabel("$SNR_{std}$")
+plt.xlim(0,50)
+plt.ylim(0,50)
 plt.show()
 
 
@@ -786,7 +806,7 @@ plt.text(9*10**4,10**3, '$z = 11.5$', bbox=dict(
         facecolor='white',
         alpha=0.8
     ))
-plt.savefig("/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/SNR_texp_logE.png")
+#plt.savefig("/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/SNR_texp_logE.png")
 plt.show()
 
 

@@ -1,0 +1,3 @@
+cluster_no	mass	coordx	coordy
+1		4.0	114	114
+

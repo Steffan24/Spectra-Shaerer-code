@@ -22,6 +22,9 @@ plt.style.use(['science', 'nature'])
 
 plot_params = {
     "figure.dpi": "200",
+    "font.family": "STIXGeneral",
+    "mathtext.fontset": "stix",
+    "mathtext.default": "regular",
     "axes.labelsize": 12,
     "axes.linewidth": 1.5,
     "axes.titlesize": 12,

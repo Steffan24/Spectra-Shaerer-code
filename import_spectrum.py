@@ -9,6 +9,7 @@ from matplotlib.colors import Normalize
 from astropy.io import ascii
 import latex
 import os
+import plotting_params
 
 ### VARIABLES (unchanged as of 07/10/25)  ###
 ttt = 'ge0' #Options - ge0: no mass loss, mdt: with mass loss
@@ -31,14 +32,14 @@ T = T_100 = 10**(4.7)
 
 
 ### PLOTTING PARAMS ###
-plt.rcParams["font.size"] = 30
-plt.rcParams["legend.fontsize"] = 30
-plt.rcParams["figure.frameon"] = False
-plt.rcParams["figure.titlesize"] = 16
-plt.rcParams["text.usetex"] = True
-plt.rcParams["figure.subplot.wspace"] = 0.03
-plt.rcParams["legend.frameon"] = False
-plt.rcParams["axes.linewidth"] = 1.75
+# plt.rcParams["font.size"] = 30
+# plt.rcParams["legend.fontsize"] = 30
+# plt.rcParams["figure.frameon"] = False
+# plt.rcParams["figure.titlesize"] = 16
+# plt.rcParams["text.usetex"] = True
+# plt.rcParams["figure.subplot.wspace"] = 0.03
+# plt.rcParams["legend.frameon"] = False
+# plt.rcParams["axes.linewidth"] = 1.75
 
 ### CONSTANTS USED ###
 #SI UNITS
@@ -122,9 +123,9 @@ def plot(n, SED_data):
         plt.show()
         
     elif n == 'multi':
-        fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05])
-        ax1.plot(np.log10(lambda_sun), log_B + 30, label = '\(Blackbody\ 1M_{\odot}\)', linestyle = '--', color='red', zorder = 3)
-        ax1.plot(np.log10(lambda_blackbody), log_blackbody + 30, label = '\(Blackbody\ 100M_{\odot}\)', linestyle = '--', color = 'orange', zorder = 2)
+        fig,(ax1,ax2) = plt.subplots(1,2,width_ratios=[0.95,0.05], figsize = (8,6))
+        ax1.plot(np.log10(lambda_sun), log_B + 30, label = '$Blackbody\ 1M_{\odot}$', linestyle = '--', color='red', zorder = 3)
+        ax1.plot(np.log10(lambda_blackbody), log_blackbody + 30, label = '$Blackbody\ 100M_{\odot}$', linestyle = '--', color = 'orange', zorder = 2)
         cmap = 'viridis'
         ages = np.array([a[0] for a in SED_data["ages"]])
         #norm = Normalize(np.min(ages), np.max(ages))
@@ -137,23 +138,24 @@ def plot(n, SED_data):
             log_SED = np.log10(SED_data["SED_flux"][i])
             age = SED_data["ages"][i][0]
             ax1.plot(log_wavelength, log_SED + 30, c=colours[i])
-        ax1.set_xlabel("\(\log{\lambda}\ (\mathring{A})\)")
-        ax1.set_ylabel("\(logF_{\lambda}\ 1e+30\ (erg \cdot s^{-1} \cdot \mathring{A}^{-1} \cdot cm^{-2} \cdot M_{\odot}^{-1})\)")
+        ax1.set_xlabel("$\log{\lambda}\ (\mathring{A})$")
+        ax1.set_ylabel("$logF_{\lambda}\ (\cdot 10^{30}\ erg \cdot s^{-1} \cdot cm^{-2}\cdot \mathring{A}^{-1} \cdot M_{\odot}^{-1})$")
         ax1.set_ylim(-2,6)
         ax1.set_xlim(2,5.2)
-        ax1.legend(bbox_to_anchor = [1,1])
-        ax1.text(4.776,-0.38, '\(t_{100M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.legend(loc='upper center',ncols = 2,bbox_to_anchor = [0.5,1.1])
+        ax1.text(4.776,-0.38, '$t_{100M_{\odot}}$', bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(4.709,-0.69), xycoords='data', xytext=(4.776,-0.38), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(4.4,0.2, '\(t_{50M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(4.4,0.2, '$t_{50M_{\odot}}$', bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy=(4.286,0.18), xycoords='data', xytext=(4.387,0.32), textcoords = 'data', arrowprops = dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(3.994,2.68, '\(t_{10M_{\odot}}\)', bbox=dict(edgecolor='black', fc='None'))
+        ax1.text(3.994,2.68, '$t_{10M_{\odot}}$', bbox=dict(edgecolor='black', fc='None'))
         ax1.annotate("",xy = (3.395,0.66), xycoords='data', xytext=(3.994,2.68), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
-        ax1.text(4.186, 1.28, '\(t_{5M_{\odot}}\)', bbox=dict(edgecolor='black', fc = 'None'))
+        ax1.text(4.186, 1.28, '$t_{5M_{\odot}}$', bbox=dict(edgecolor='black', fc = 'None'))
         ax1.annotate("",xy = (3.379,0.02), xycoords='data', xytext=(4.186,1.28), textcoords='data', arrowprops=dict(arrowstyle="->", connectionstyle='arc3'))
         plt.colorbar(bar,cax=ax2,location = 'right', orientation = 'vertical')
-        labels = [f'\({min(ages)}\)','\(t_{100M_{\odot}}\)','\(t_{50M_{\odot}}\)','\(t_{10M_{\odot}}\)','\(t_{5M_{\odot}}\)', f'\({max(ages)}\)']
+        labels = [rf'${min(ages)}$','$t_{100M_{\odot}}$','$t_{50M_{\odot}}$','$t_{10M_{\odot}}$','$t_{5M_{\odot}}$', rf'${max(ages)}$']
         ax2.set_yticks([min(ages),t_100, t_50, t_10, t_5,max(ages)], labels=labels)
-        ax2.set_ylabel('\(\log{t}\ since\ ZAMS\ (yr)\)')
+        ax2.set_ylabel('$\log{t}\ since\ ZAMS\ (yr)$')
+        plt.savefig("/home/steff/hsim/report_plots/cont_t.png")
         plt.show()
                                     
 

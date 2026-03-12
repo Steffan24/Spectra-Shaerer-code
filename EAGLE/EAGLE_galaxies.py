@@ -1,0 +1,146 @@
+import plotting_params
+from modules import np, plt, ascii, os, fits
+
+file = "/home/steff/hsim/EAGLE/SMGs_EAGLE_v2.fits"
+
+hdul = fits.open(file)
+
+data = hdul[1].data
+
+ID = data["GalaxyID"]
+redshift = data["Redshift"]
+UKIDSS_H = data["UKIDSS_H"]
+vel_disp_10 = data["velDisp_10kpc"]
+SFR_10 = data["SFR_10kpc"]
+mass_star_10 = data["Mass_Star_10kpc"]
+half_mass_rad_star = data["HalfMassRad_Star"]
+SF_metallicity = data["SF_Metallicity"]
+
+mask = (redshift > 9)
+redshift_hr = redshift[mask]
+UKIDSS_H_hr = UKIDSS_H[mask]
+vel_disp_10_hr = vel_disp_10[mask]
+SFR_10_hr = SFR_10[mask]
+mass_star_10_hr = mass_star_10[mask]
+half_mass_rad_star_hr = half_mass_rad_star[mask]
+SF_metallicity_hr = SF_metallicity[mask]
+plt.rcParams["text.usetex"] = False
+m_pseudo = -2.5*np.log10(UKIDSS_H/3631)
+m_pseudo_hr = m_pseudo[mask]
+print(np.nanmin(m_pseudo), np.nanmax(m_pseudo))
+
+fig, axs = plt.subplots(2,2, sharex = True, sharey=False, width_ratios = [1,1], height_ratios=[1,1], figsize=(10,6))
+axs[0,0].scatter(mass_star_10_hr, SFR_10_hr, label = '$z > 9$', zorder=2)
+axs[0,0].scatter(mass_star_10, SFR_10, c='red', s=1, label = '$z < 9$', zorder=1)
+axs[0,0].set_xscale('log')
+axs[0,0].set_yscale('log')
+#axs[0,0].set_xlabel("Stellar mass")
+axs[0,0].set_ylabel("SFR ($M_{\odot}\ \mathrm{yr}^{-1}$)")
+axs[0,0].legend(ncols = 2,bbox_to_anchor=(1.5,1.2))
+
+axs[1,0].scatter(mass_star_10_hr, half_mass_rad_star_hr, zorder = 2)
+axs[1,0].scatter(mass_star_10, half_mass_rad_star,c='red', s=1,zorder = 1)
+axs[1,0].set_xscale('log')
+axs[1,0].set_yscale('log')
+axs[1,0].set_xlabel('Stellar mass')
+axs[1,0].set_ylabel('Half mass radius (kPc)')
+
+axs[0,1].scatter(mass_star_10_hr, SF_metallicity_hr, zorder = 2)
+axs[0,1].scatter(mass_star_10, SF_metallicity, c='red', s=1, zorder = 1)
+axs[0,1].set_xscale('log')
+axs[0,1].set_yscale('log')
+#axs[0,1].set_xlabel('Stellar mass')
+axs[0,1].set_ylabel('SF metallicity ($Z_{\odot}$)')
+
+axs[1,1].scatter(mass_star_10_hr, m_pseudo_hr,  zorder = 2)
+axs[1,1].scatter(mass_star_10, m_pseudo, c='red', s=1,zorder = 1)
+axs[1,1].set_xscale('log')
+#axs[1,1].set_yscale('log')
+axs[1,1].invert_yaxis()
+axs[1,1].set_xlabel('Stellar mass')
+axs[1,1].set_ylabel('H magnitude')
+
+plt.subplots_adjust(wspace = 0.3)
+plt.savefig('/home/steff/hsim/EAGLE/EAGLE_plot.png')
+
+plt.show()
+
+## PLOT 2
+
+fig, axs = plt.subplots(2,2, sharex = True, sharey=False, width_ratios = [1,1], height_ratios=[1,1], figsize=(10,6))
+axs[0,0].scatter(mass_star_10_hr, SFR_10_hr, label = '$z > 9$', zorder=2)
+axs[0,0].set_xscale('log')
+axs[0,0].set_yscale('log')
+#axs[0,0].set_xlabel("Stellar mass")
+axs[0,0].set_ylabel("SFR ($M_{\odot}\ \mathrm{yr}^{-1}$)")
+
+axs[1,0].scatter(mass_star_10_hr, half_mass_rad_star_hr, zorder = 2)
+axs[1,0].set_xscale('log')
+axs[1,0].set_yscale('log')
+axs[1,0].set_xlabel('Stellar mass')
+axs[1,0].set_ylabel('Half mass radius (kPc)')
+
+axs[0,1].scatter(mass_star_10_hr, SF_metallicity_hr, zorder = 2)
+axs[0,1].set_xscale('log')
+axs[0,1].set_yscale('log')
+#axs[0,1].set_xlabel('Stellar mass')
+axs[0,1].set_ylabel('SF metallicity ($Z_{\odot}$)')
+
+axs[1,1].scatter(mass_star_10_hr, m_pseudo_hr,  zorder = 2)
+axs[1,1].set_xscale('log')
+#axs[1,1].set_yscale('log')
+axs[1,1].invert_yaxis()
+axs[1,1].set_xlabel('Stellar mass')
+axs[1,1].set_ylabel('H magnitude')
+
+plt.subplots_adjust(wspace = 0.35)
+plt.savefig('/home/steff/hsim/EAGLE/EAGLE_plot_highz.png')
+
+plt.show()
+
+i_values = []
+for i in range(len(half_mass_rad_star_hr)):
+    if half_mass_rad_star_hr[i] > 0.4:
+        i_values.append(i)
+
+i_values = np.array(i_values)
+
+fig, axs = plt.subplots(2,2, sharex = True, sharey=False, width_ratios = [1,1], height_ratios=[1,1], figsize=(10,6))
+axs[0,0].scatter(mass_star_10_hr, SFR_10_hr, label = '$z > 9$', zorder=2)
+axs[0,0].scatter(mass_star_10_hr[i_values], SFR_10_hr[i_values],color='red', label = '$z > 9$', zorder=2)
+axs[0,0].set_xscale('log')
+axs[0,0].set_yscale('log')
+#axs[0,0].set_xlabel("Stellar mass")
+axs[0,0].set_ylabel("SFR ($M_{\odot}\ \mathrm{yr}^{-1}$)")
+
+axs[1,0].scatter(mass_star_10_hr, half_mass_rad_star_hr, zorder = 2)
+axs[1,0].scatter(mass_star_10_hr[i_values], half_mass_rad_star_hr[i_values],color='red', zorder = 2)
+axs[1,0].set_xscale('log')
+axs[1,0].set_yscale('log')
+axs[1,0].set_xlabel('Stellar mass')
+axs[1,0].set_ylabel('Half mass radius (kPc)')
+
+axs[0,1].scatter(mass_star_10_hr, SF_metallicity_hr, zorder = 2)
+axs[0,1].scatter(mass_star_10_hr[i_values], SF_metallicity_hr[i_values],color='red', zorder = 2)
+axs[0,1].set_xscale('log')
+axs[0,1].set_yscale('log')
+#axs[0,1].set_xlabel('Stellar mass')
+axs[0,1].set_ylabel('SF metallicity ($Z_{\odot}$)')
+
+axs[1,1].scatter(mass_star_10_hr, m_pseudo_hr,  zorder = 2)
+axs[1,1].scatter(mass_star_10_hr[i_values], m_pseudo_hr[i_values],color='red',  zorder = 2)
+axs[1,1].set_xscale('log')
+#axs[1,1].set_yscale('log')
+axs[1,1].invert_yaxis()
+axs[1,1].set_xlabel('Stellar mass')
+axs[1,1].set_ylabel('H magnitude')
+
+plt.subplots_adjust(wspace = 0.35)
+plt.savefig('/home/steff/hsim/EAGLE/EAGLE_plot_highr.png')
+
+plt.show()
+
+
+
+
+

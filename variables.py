@@ -63,7 +63,7 @@ dir_basic = "/home/steff/hsim/HSIM/hsim/output_cubes/salpeter" #output directori
 dir_basic_logA = "/home/steff/hsim/HSIM/hsim/output_cubes/logA" #output directories
 dir_basic_logE = "/home/steff/hsim/HSIM/hsim/output_cubes/logE" #output directories
 dir_basic_high_res = "/home/steff/hsim/HSIM/hsim/output_cubes/high_res_logE"
-output_mass = 4.5
+output_mass = 6.0
 corresponding_V = 23.7
 output_exp_time = 360
 

@@ -5,7 +5,7 @@ import plotting_params
 import numpy as np
 import matplotlib.pyplot as plt
 
-Mmin, Mmax = 0.5, 260.0
+Mmin, Mmax = 0.5, 1000.0
 M = np.logspace(np.log10(Mmin), np.log10(Mmax), 4000)
 
 # --- Shapes in dN/dlog10M space ---
@@ -36,9 +36,9 @@ phi_A   *= scale
 phi_E   *= scale
 
 plt.figure()
-plt.plot(M, phi_sal, 'k', label='Salpeter')
-plt.plot(M, phi_A,  'r', label='logA (10,1.0)')
-plt.plot(M, phi_E,  color='orange', label='logE (60,1.0)')
+plt.plot(M, phi_sal, 'k', label='$Salpeter$')
+plt.plot(M, phi_A,  'r', label='$logL\ (10,1.0)$')
+plt.plot(M, phi_E,  color='orange', label='$logH\ (60,1.0)$')
 
 plt.xscale('log'); plt.yscale('log')
 plt.xlim(Mmin, Mmax)
@@ -46,5 +46,5 @@ plt.ylim(1e-5, 1e-1)
 plt.xlabel(r'$M\ (M_\odot)$')
 plt.ylabel(r'$dN/d\log_{10}M$')
 plt.legend()
-plt.savefig('/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/IMF_models.png')
+plt.savefig('/home/steff/hsim/report_plots/IMF_models.png')
 plt.show()

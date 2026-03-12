@@ -377,8 +377,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     height_ratios=[3, 1],
     sharex=True
     )
-    ax3.set_xlabel("\(\lambda (\mathring{A})\)")
-    ax1.set_ylabel("\(\log{f_{\lambda}} (erg/s/cm^2/\mathring{A}/M_{\odot})\)", labelpad = 12)
+    ax3.set_xlabel("$\lambda (\mathring{A})$")
+    ax1.set_ylabel("$\log{f_{\lambda}} (erg\ s^{-1}\ cm^{-2}\ \mathring{A}^{-1}\ M_{\odot}^{-1})$", labelpad = 12)
     ax1.plot((wavelength_z), np.log10(flux_z))
 
 
@@ -400,28 +400,31 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     def mag_to_flux(y):
         return magnitudes_to_flux_single((y), mean_lambda)
 
-    ax1.set_ylim(-29.5, -23)
+    ax1.set_ylim(-28, -22)
 
-    ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
+    ax2 = ax1.twinx()
+    ax2.set_ylim(flux_to_mag(-28), flux_to_mag(-22))
+
+    #ax2 = ax1.secondary_yaxis('right', functions=(flux_to_mag, mag_to_flux))
 
     ax2.set_ylabel(r"$AB\ Magnitude$")
 
     print(LR_IZJ)
 
-    ax1.plot(LR_IZJ, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c='blue')
-    ax1.text(10680,-28.377,'\(IZJ\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.plot(LR_HK, np.array([-28.5, -28.5, -28.5]), linewidth = 3, c= 'red')
-    ax1.text(19040,-28.377,'\(HK\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.plot(MR_IZ, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c ='green')
-    ax1.text(9150,-29.4,'\(IZ\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.plot(MR_J, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='purple')
-    ax1.text(11750,-29.4,'\(J\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.plot(MR_H, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c='blue')
-    ax1.text(16110,-29.4,'\(H\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.plot(MR_K, np.array([-28.75, -28.75, -28.75]), linewidth = 3, c = 'red')
-    ax1.text(22000,-29.4,'\(K\)',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
-    ax1.text(11500, -25.790, r'\(Ly-\)$\alpha$', bbox=dict(edgecolor='black', fc='None'))
-    ax1.text(16180, -26, r'\(HeII_{1640}\)', bbox=dict(edgecolor='black', fc='None'))
+    ax1.plot(LR_IZJ, np.array([-27, -27, -27]), linewidth = 3, c='blue')
+    ax1.text(10680,-26.7,'$IZJ$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.plot(LR_HK, np.array([-27, -27, -27]), linewidth = 3, c= 'red')
+    ax1.text(23000,-26.7,'$HK$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.plot(MR_IZ, np.array([-27.25, -27.25, -27.25]), linewidth = 3, c ='green')
+    ax1.text(9150,-27.8,'$IZ$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.plot(MR_J, np.array([-27.25, -27.25, -27.25]), linewidth = 3, c='purple')
+    ax1.text(11750,-27.8,'$J$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.plot(MR_H, np.array([-27.25, -27.25, -27.25]), linewidth = 3, c='blue')
+    ax1.text(16110,-27.8,'$H$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.plot(MR_K, np.array([-27.25, -27.25, -27.25]), linewidth = 3, c = 'red')
+    ax1.text(22000,-27.8,'$K$',bbox=dict(edgecolor='None', fc = 'None'))#, fontsize = 18)
+    ax1.text(13000, -22.75, r'$Ly-\alpha$', bbox=dict(edgecolor='None', fc='None'))
+    ax1.text(18000, -23.7, r'$HeII_{1640}$', bbox=dict(edgecolor='None', fc='None'))
    # angstrom_Ly = (angstrom_redshifted/18010) * 13350
     #ax1.text(21200, -26, rf"$\begin{{array}}{{c}} " \
     #    rf"Z = {z} \\ R = {R} \\ \sigma_{{He_{{II1640}}}} = {angstrom_redshifted:.2f}\,\mathring{{A}} \\ \sigma_{{Ly-\alpha}} = {angstrom_Ly:.2f}\,\mathring{{A}}" \
@@ -439,16 +442,17 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
         w = skyline_data['wavelength'][i]
         f = skyline_data['flux'][i]
 
-        label = 'Sky emission lines' if i == 0 else None
+        label = '$Sky\ emission\ lines$' if i == 0 else None
         ax3.vlines(w, 0, f, color='blue', alpha=0.4,
                linewidth=0.8, label=label)
+    ax3.tick_params(axis='y', colors='blue')
     ax3_t = ax3.twinx()
     ax3_t.plot(
         opacity_data["wavelength"],
         opacity_data["transmittance"],
         color='black',
         lw=1.5,
-        label='Atmospheric transmission'
+        label='$Atmospheric\ transmission$'
     )
 
     ax3_t.set_ylabel(r"$T$")
@@ -459,8 +463,8 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
     #ax4.set_ylim(0.25,1.1)
     ax3.set_ylim(0, np.max(skyline_data['flux']) * 1.1)
     #ax4.set_ylabel("\(T (\%)\)", labelpad = 6)
-    ax3.set_ylabel("\(f\)", labelpad = -5, color='blue')
-    ax3.tick_params(axis='y', colors='blue')
+    ax3.set_ylabel("$f$", labelpad = -5, color='blue')
+    ax3.tick_params(axis='y', color='blue')
     ax3_t.tick_params(axis='y', colors='black')
     lines1, labels1 = ax3.get_legend_handles_labels()
     lines2, labels2 = ax3_t.get_legend_handles_labels()
@@ -489,7 +493,7 @@ def plot_spectra_redshifted(flux_z, wavelength_z, flux_zab, LR_IZJ, LR_HK, MR_IZ
 
     #fig.add_artist(plt.Line2D([0.125, 0.9], [y_solid, y_solid],
      #                         transform=fig.transFigure, color='black', lw=1.5, linestyle = '--'))
-    plt.savefig('/home/steff/hsim/zackrisson_pop3_all/code/Report_plots/interim_report/harmoni_params_logA.png')
+    plt.savefig("/home/steff/hsim/report_plots/HARMONI_config.png")
     plt.show()
 
 

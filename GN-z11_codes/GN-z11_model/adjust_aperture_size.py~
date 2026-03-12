@@ -1,0 +1,86 @@
+from modules import np, plt, ScalarMappable, Normalize, ascii, latex, os, cosmo, interpolate, mticker, Table, fits, inset_axes, mark_inset,patches, curve_fit, GridSpec, axes3d, CircularAperture,aperture_photometry
+import plotting_params
+from collapse_pop_output import import_data, isolate_popIII, analyse_lines
+
+output_dir = '/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/salpeter_run/salpeter_run/run_9'
+
+counts_file = f'{output_dir}/run_9_reduced.fits'
+flux_file = f'{output_dir}/run_9_reduced_flux_cal.fits'
+std_file = f'{output_dir}/run_9_std.fits'
+
+extraction_region = 36
+xcoord = 114
+ycoord =114
+centre = 100
+d = 14
+mass = 7 #solar mass
+output_scale = 7*10**(-3)
+
+# import full galaxy data
+counts_data, counts_wavelength, flux_data, flux_wavelength, std_data, std_wavelength = import_data(counts_file, flux_file, std_file)
+
+aperture_sizes = np.linspace(2,14,7)
+print(f"aperture sizes: {aperture_sizes}")
+
+for i in range(len(aperture_sizes)):
+    dir_save = f'/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/SNR_arrays_aperture_sizes/aperture_size_{aperture_sizes[i]}.npy'
+
+    #plot collapsed image with circ
+    hdul = fits.open(counts_file)
+    data = hdul[0].data
+    collapsed_image = np.nansum(data, axis=0)
+    collapsed_image = np.nan_to_num(collapsed_image)
+    ny, nx = collapsed_image.shape
+    pixel_scale_mas = 7
+    extent = [0, nx*pixel_scale_mas, 0, ny*pixel_scale_mas]
+    fig, ax = plt.subplots()
+    image = ax.imshow(collapsed_image, origin='lower', cmap='gray', aspect='equal', extent=extent)
+    circ = patches.Circle((114,114),aperture_sizes[i], alpha=0.8, fc='None',ec='red', label = '$Cluster$')
+    circ_ref = patches.Circle((86,86), aperture_sizes[i], alpha=0.8, fc='None', ec='blue', label='$Ref$')
+    ax.add_patch(circ)
+    ax.add_patch(circ_ref)
+    ax.set_xlabel('$x\ (mas)$')
+    ax.set_ylabel('$y\ (mas)$')
+    ax.legend(loc='upper center',ncols = 2, bbox_to_anchor=(0.5, 1.2), frameon=False)
+    plt.savefig(f"/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/SNR_arrays_aperture_sizes/aperture_{aperture_sizes[i]}.png")
+    plt.show()
+    
+    #continue with loop
+    flux_region, flux_nearby, popIII_flux, counts_region, counts_nearby, popIII_counts, std_region, std_nearby, popIII_std = isolate_popIII(flux_file, counts_file, centre, d, output_scale, std_file, aperture_sizes[i])
+    analyse_lines(flux_region, flux_nearby, popIII_flux, counts_region, counts_nearby, popIII_counts, mass,dir_save)
+
+SNR_HeII = []
+SNR_NIV = []
+SNR_CIV = []
+SNR_OIII = []
+SNR_NIII = []
+SNR_Ly_a = []
+
+for j in range(len(aperture_sizes)):
+    dir_save = f'/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/SNR_arrays_aperture_sizes/aperture_size_{aperture_sizes[j]}.npy'
+    SNR_values = np.load(f"{dir_save}")
+    SNR_HeII.append(SNR_values[3])
+    SNR_NIV.append(SNR_values[1])
+    SNR_CIV.append(SNR_values[2])
+    SNR_OIII.append(SNR_values[4])
+    SNR_NIII.append(SNR_values[5])
+
+plt.figure()
+plt.plot(aperture_sizes, SNR_HeII, label='$HeII$')
+plt.plot(aperture_sizes, SNR_NIV, label='$NIV$')
+plt.plot(aperture_sizes, SNR_CIV, label='$CIV$')
+plt.plot(aperture_sizes, SNR_OIII, label='$OIII$')
+plt.plot(aperture_sizes, SNR_NIII, label='$NIII$')
+plt.xlabel("$Aperture\ diameter\ (pixels)$")
+plt.ylabel("$SNR_{POPIII}$")
+plt.hlines(5, xmin=0, xmax=14,colors='red', ls='--')
+plt.vlines(12, ymin=0, ymax=15,colors='red', ls='--')
+plt.text(8, 15.5, 'No detection')
+plt.legend(loc='upper center',ncols = 5, bbox_to_anchor=(0.5, 1.2), frameon=False)
+plt.xlim(2,14)
+#plt.text(0.0075, 23, "$IMF: Salpeter$\n$M: 10^{7}M_{\odot}$", bbox=dict(boxstyle='round', facecolor='white',alpha=0.8))
+plt.savefig("/home/steff/hsim/HSIM/hsim/output_cubes/GN-z11_outputs/SNR_arrays_aperture_sizes/figure.png")
+plt.show()
+
+
+

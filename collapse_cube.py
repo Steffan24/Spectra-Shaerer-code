@@ -144,6 +144,19 @@ def extracting_over_aperture(wavelength_angstrom, data_spectrum,data, wavelength
     plt.subplots_adjust(hspace=1, wspace=0.6)
     plt.show()
 
+    fig,ax = plt.subplots()
+    ax.plot(array, SNR_totals, c='green', label = "$SNR$")
+    ax.set_xlabel("$R_{aperture}\ (pixels)$")
+    ax.set_ylabel("$SNR$")
+    ax1 = ax.twinx()
+    ax1.plot(array, np.array(total_counts) * (10**-4), c='blue', label = '$Counts$')
+    ax1.set_ylabel("$Counts (\cdot 10^4)$")
+    ax.vlines(x=3,ymin=np.min(SNR_totals), ymax = np.max(SNR_totals) , color = 'red', ls = '--', label = '$R_{aperture} = 3$')
+    ax.legend(loc='upper center', ncols = 2, bbox_to_anchor=[0.15, 1.25])
+    ax1.legend(loc='upper center', ncols = 1, bbox_to_anchor=[0.9, 1.25])
+    plt.savefig('/home/steff/hsim/report_plots/aperture_calibration.png')
+    plt.show()
+
     
     extraction_region = 6
                        

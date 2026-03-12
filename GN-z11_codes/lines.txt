@@ -1,0 +1,7 @@
+line	wavelength
+Ly-alpha	14132.0
+NIV		17254
+CIV		17943.6
+OIIII		19288.2
+HeII		19021.5
+NIII		20297.2
